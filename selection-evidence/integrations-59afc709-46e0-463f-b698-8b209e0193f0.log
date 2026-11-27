@@ -1,0 +1,10 @@
+✔ expired and deleted evidence cannot retain a supported diagnosis (31.167701ms)
+✔ program effects cannot grant host permissions (6.15494ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 94.372738

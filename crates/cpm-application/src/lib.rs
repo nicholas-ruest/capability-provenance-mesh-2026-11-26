@@ -207,7 +207,7 @@ impl<U: UpstreamSuite> Application<U> {
         plugin: &str,
         version: &str,
     ) -> Result<DecisionRecord, ApplicationError> {
-        Ok(self.store.get(plugin, version)?)
+        Ok(self.store.active(plugin, version)?)
     }
     pub fn audit(&self, correlation: &str) -> Result<DecisionRecord, ApplicationError> {
         Ok(self.store.audit(correlation)?)
@@ -254,7 +254,11 @@ mod tests {
         let app = Application::new(DirectoryStore::open(&d).unwrap(), Seven, 1024);
         let r = app.submit(req(true)).unwrap();
         assert!(!r.admitted);
-        assert!(!app.retrieve("image", "2").unwrap().admitted);
+        assert!(matches!(
+            app.retrieve("image", "2"),
+            Err(ApplicationError::Store(StoreError::Missing))
+        ));
+        assert!(!app.audit(&r.correlation_id).unwrap().admitted);
         let _ = std::fs::remove_dir_all(d);
     }
 }

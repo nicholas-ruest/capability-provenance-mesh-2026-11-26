@@ -43,6 +43,7 @@ impl DirectoryStore {
         let root = root.into();
         fs::create_dir_all(root.join("decisions"))?;
         fs::create_dir_all(root.join("audit"))?;
+        fs::create_dir_all(root.join("active"))?;
         Ok(Self { root })
     }
     fn key(plugin: &str, version: &str) -> String {
@@ -66,10 +67,21 @@ impl DirectoryStore {
             .join("audit")
             .join(format!("{}.json", sanitize(&record.correlation_id)));
         fs::write(audit, serde_json::to_vec_pretty(record)?)?;
+        if record.admitted {
+            fs::write(
+                self.root
+                    .join("active")
+                    .join(Self::key(&record.plugin, &record.version)),
+                serde_json::to_vec_pretty(record)?,
+            )?;
+        }
         Ok(())
     }
     pub fn get(&self, plugin: &str, version: &str) -> Result<DecisionRecord, StoreError> {
         read(self.root.join("decisions").join(Self::key(plugin, version)))
+    }
+    pub fn active(&self, plugin: &str, version: &str) -> Result<DecisionRecord, StoreError> {
+        read(self.root.join("active").join(Self::key(plugin, version)))
     }
     pub fn audit(&self, correlation: &str) -> Result<DecisionRecord, StoreError> {
         read(
@@ -120,7 +132,7 @@ mod tests {
         let _ = fs::remove_dir_all(&d);
         DirectoryStore::open(&d).unwrap().append(&rec()).unwrap();
         assert_eq!(
-            DirectoryStore::open(&d).unwrap().get("p", "1").unwrap(),
+            DirectoryStore::open(&d).unwrap().active("p", "1").unwrap(),
             rec()
         );
         let _ = fs::remove_dir_all(d);

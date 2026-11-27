@@ -31,13 +31,14 @@ jobs:
           set -euo pipefail
           source_sha="$(git rev-parse HEAD)"
           comments=/tmp/dream-machine-review-comments.json
-          gh api "repos/$GITHUB_REPOSITORY/issues/$REVIEW_PR_NUMBER/comments?per_page=100" > "$comments"
-          count="$(jq -r --arg sha "$source_sha" '[.[] | select(.user.login == "nicholas-ruest") | select(.body | contains("<!-- DREAM_MACHINE_INDEPENDENT_SEMANTIC_REVIEW -->")) | select(.body | contains($sha)) | select(.body | contains("**PASS**"))] | length' "$comments")"
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/issues/$REVIEW_PR_NUMBER/comments?per_page=100" > "$comments"
+          review_filter='[.[][] | select(.user.login == "nicholas-ruest" and .author_association == "OWNER") | select(.body | contains("<!-- DREAM_MACHINE_INDEPENDENT_SEMANTIC_REVIEW -->")) | select(([.body | split("\n")[] | select(startswith("Source-SHA: "))] | length) == 1) | select(.body | split("\n") | index("Source-SHA: " + $sha)) | select(([.body | split("\n")[] | select(startswith("Verdict: "))] | length) == 1) | select(.body | split("\n") | index("Verdict: PASS"))]'
+          count="$(jq -r --arg sha "$source_sha" "$review_filter | length" "$comments")"
           test "$count" = 1
-          jq -r --arg sha "$source_sha" '[.[] | select(.user.login == "nicholas-ruest") | select(.body | contains("<!-- DREAM_MACHINE_INDEPENDENT_SEMANTIC_REVIEW -->")) | select(.body | contains($sha)) | select(.body | contains("**PASS**"))][0].body' "$comments" > "$DREAM_MACHINE_SEMANTIC_REVIEW"
+          jq -r --arg sha "$source_sha" "$review_filter | .[0].body" "$comments" > "$DREAM_MACHINE_SEMANTIC_REVIEW"
           grep -F '<!-- DREAM_MACHINE_INDEPENDENT_SEMANTIC_REVIEW -->' "$DREAM_MACHINE_SEMANTIC_REVIEW"
-          grep -F "$source_sha" "$DREAM_MACHINE_SEMANTIC_REVIEW"
-          grep -F '**PASS**' "$DREAM_MACHINE_SEMANTIC_REVIEW"
+          grep -Fx "Source-SHA: $source_sha" "$DREAM_MACHINE_SEMANTIC_REVIEW"
+          grep -Fx 'Verdict: PASS' "$DREAM_MACHINE_SEMANTIC_REVIEW"
       - uses: dtolnay/rust-toolchain@stable
         with: {toolchain: "1.100.0", components: rustfmt,clippy}
       - uses: actions/setup-node@v4

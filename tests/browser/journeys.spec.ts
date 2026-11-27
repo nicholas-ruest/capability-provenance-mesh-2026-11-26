@@ -36,7 +36,7 @@ test("primary outcome correlates all seven executed upstreams", async ({ page },
   const id = identity("primary", testInfo.project.name);
   await prepare(page, id.plugin, id.version);
   await admit(page);
-  await page.getByRole("button", { name: /Evidence Mesh/ }).click();
+  await page.getByRole("button", { name: /Evidence mesh/i }).click();
   const mesh = page.getByTestId("upstream-evidence");
   await expect(mesh.locator("article")).toHaveCount(7);
   for (const upstream of upstreams) await expect(mesh).toContainText(upstream);
@@ -53,6 +53,7 @@ test("policy denial proves no effect and recovers", async ({ page }, testInfo) =
   await saveViewport(page, "denial-proof", testInfo.project.name, testInfo);
   await page.getByRole("button", { name: "Recover and continue" }).click();
   await expect(page.getByRole("status")).toContainText("Recovered");
+  await page.getByLabel("Version", { exact: true }).fill(id.version + "-recovery");
   await admit(page);
   await expect(page.getByTestId("decision-receipt")).toContainText("Protected effects1");
 });
@@ -70,13 +71,13 @@ test("saved result and audit survive refresh and backend restart", async ({ page
   await expect(page.getByTestId("decision-receipt")).toContainText(correlation);
   execFileSync(restart, [], { stdio: "inherit", timeout: 60_000 });
 
-  await page.getByRole("button", { name: /Durable Registry/ }).click();
+  await page.getByRole("button", { name: /Registry/i }).click();
   await page.getByLabel("Plugin", { exact: true }).fill(id.plugin);
   await page.getByLabel("Version", { exact: true }).fill(id.version);
   await page.getByRole("button", { name: "Retrieve from registry" }).click();
   await expect(page.getByTestId("decision-receipt")).toContainText(correlation);
 
-  await page.getByRole("button", { name: /Audit Replay/ }).click();
+  await page.getByRole("button", { name: /Audit replay/i }).click();
   await page.getByLabel("Correlation ID", { exact: true }).fill(correlation);
   await page.getByRole("button", { name: "Replay audit" }).click();
   await expect(page.getByTestId("decision-receipt")).toContainText(correlation);

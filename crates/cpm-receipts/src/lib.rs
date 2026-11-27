@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use thiserror::Error;
+const MAX_UPSTREAM_RECEIPT_BYTES: usize = 320;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Receipt {
     pub correlation_id: String,
@@ -197,7 +198,10 @@ fn validate_fields(c: &str, a: &str, u: &[String]) -> Result<(), ReceiptError> {
     if !valid_digest(a) {
         return Err(ReceiptError::Field("artifact_sha"));
     }
-    if u.is_empty() || u.iter().any(|v| v.is_empty() || v.len() > 160) {
+    if u.is_empty()
+        || u.iter()
+            .any(|v| v.is_empty() || v.len() > MAX_UPSTREAM_RECEIPT_BYTES)
+    {
         return Err(ReceiptError::Field("upstreams"));
     }
     Ok(())
@@ -288,6 +292,25 @@ mod tests {
             receipts: vec![receipt("corr-0001", "a")],
         };
         assert_eq!(b.verify(), Err(ReceiptError::Field("source_sha")));
+    }
+    #[test]
+    fn provenance_receipt_length_is_bounded() {
+        assert!(
+            Receipt::try_issue(
+                "corr-0001",
+                "a".repeat(64),
+                vec!["x".repeat(MAX_UPSTREAM_RECEIPT_BYTES)]
+            )
+            .is_ok()
+        );
+        assert_eq!(
+            Receipt::try_issue(
+                "corr-0001",
+                "a".repeat(64),
+                vec!["x".repeat(MAX_UPSTREAM_RECEIPT_BYTES + 1)]
+            ),
+            Err(ReceiptError::Field("upstreams"))
+        );
     }
     #[test]
     fn invalid_artifact_is_rejected() {

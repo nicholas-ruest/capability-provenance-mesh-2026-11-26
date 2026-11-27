@@ -1,16 +1,7 @@
 # Exact-source evidence plan
 
-External evidence binds the exact clean commit.
+[scripts/collect-product-evidence.sh](../scripts/collect-product-evidence.sh) executes and records ten suites: rust, backend, frontend, api, middleware, integrations, benchmark, ablations, containers, and browser.
 
-1. rust: fmt, strict clippy, locked tests, deny, exact offline metadata.
-2. backend: composition, per-crate behavior/failure, restart.
-3. frontend: install, typecheck, lint, unit, build.
-4. api: OpenAPI and generated-client drift.
-5. middleware: ordered failure matrix.
-6. integrations: intended/failure execution for all seven.
-7. benchmark: frozen scenario digest and reproducibility.
-8. ablations: graph, attenuation, quarantine, provenance deltas.
-9. containers: rootless build, launch, readiness, saved flow, stop.
-10. browser: three journeys, screenshots, Playwright JSON/trace, restart.
+The external manifest uses schema 2 and binds producer/run, exact clean source SHA, suite receipts, raw-log hashes, screenshots, Playwright JSON/trace, selection report, probe archive, semantic review, Rust-share JSON, and exact metadata argv. The composition report uses schema 2 and reciprocally maps the 20 crates to callers/tests/design and seven upstream modules to pins/call sites/receipts. [scripts/build-composition-report.mjs](../scripts/build-composition-report.mjs) constructs that report from real repository files.
 
-Manifest schema 2 binds run/source, suite receipts/hashes, screenshots/traces, semantic review, selection/probe archive, and exact argv cargo metadata --locked --offline --format-version 1. Composition schema 2 reciprocally maps crates to callers/tests/design and upstreams to pins/call sites/receipts. Canonical PASS does not replace semantic review.
+Metadata is captured with cargo metadata --locked --offline --format-version 1. No skipped browser journey, stale source, handwritten receipt, or evidence rebinding is acceptable. Canonical verifier success is necessary but does not replace independent semantic inspection.

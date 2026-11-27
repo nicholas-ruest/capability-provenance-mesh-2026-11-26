@@ -1,15 +1,15 @@
 # Requirement traceability
 
-| Requirement | Decision/domain | Production path | Verification |
+| Contract requirement | Design | Existing implementation/test | Exact evidence |
 |---|---|---|---|
-| 20+ meaningful crates | ADR-001; DDD-001/011 | service to application to domains/adapters/store | locked metadata, composition, crate tests |
-| Typed API | ADR-020; DDD-012 | OpenAPI, service v1, generated client | drift, frontend, browser |
-| No-effect denial | ADR-004/013/021; DDD-004/006 | quarantine, Agenticow, middleware | matrix and before/after hashes |
-| Five/two upstreams | ADR-006/007/009/010/013/016/019 | seven adapters | intended/failure receipts |
-| Durable retrieval | ADR-018; DDD-008/009 | store, audit, registry | refresh plus restart journey |
-| Benchmark/ablations | ADR-012 | frozen scenarios | reproducibility and deltas |
-| Containers | ADR-023 | API/web topology | rootless full-flow receipt |
-| Rust floor | ADR-024 | pinned helper | inventory and exact-head step |
-| Publication | ADR-025 | controller and child publisher | negative control, receipt, CI |
-
-Composition schema 2 must reciprocally hash ADR/DDD paths. A path without caller or failure test fails semantic review.
+| 20 meaningful reachable crates | [ADR-001](adr/001.md) | [Cargo.toml](../Cargo.toml), [service root](../crates/cpm-service/src/lib.rs) | locked metadata and composition schema 2 |
+| monotone capability grant | [ADR-004](adr/004.md) | [capability model](../crates/cpm-capability-model/src/lib.rs) | inline properties and attenuation-off ablation |
+| connected evidence | [ADR-007](adr/007.md) | [effect graph](../crates/cpm-effect-graph/src/lib.rs) | graph-off decision delta |
+| three domain outcomes | [ADR-012](adr/012.md) | [admission](../crates/cpm-admission/src/lib.rs) | table tests and denial journey |
+| five plus two upstreams | [ADR-018](adr/018.md) | [typed integrations](../crates/cpm-upstreams/src/lib.rs) | seven success/failure receipts |
+| executable middleware | [ADR-019](adr/019.md) | [service](../crates/cpm-service/src/lib.rs) | auth/role/policy/validation/error matrix |
+| authoritative typed API | [ADR-020](adr/020.md) | [OpenAPI](../api/openapi.yaml), [negative drift](../tests/api/contract-drift.test.sh) | API suite receipt |
+| three browser journeys | [ADR-021](adr/021.md) | [ProductApp](../frontend/src/ProductApp.tsx), [Playwright](../scripts/browser-journeys.spec.cjs) | JSON report, trace, screenshots |
+| frontier mechanism | [ADR-023](adr/023.md) | [benchmark](../crates/cpm-application/src/bin/benchmark.rs), [ablation](../crates/cpm-application/src/bin/ablation.rs) | corpus-bound decision metrics |
+| rootless topology | [ADR-024](adr/024.md) | [compose](../compose.yml), [readiness](../scripts/container-readiness.sh) | container inspect and full-flow receipt |
+| exact evidence/publication | [ADR-025](adr/025.md) | [collector](../scripts/collect-product-evidence.sh), [controller](../scripts/dream-machine-publication-gate.mjs) | manifest, composition, semantic review, CI |

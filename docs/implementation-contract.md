@@ -1,12 +1,12 @@
 # Implementation contract
 
-1. cpm-service is the sole composition root; all counted crates are in the locked production graph with real callers.
-2. Every crate has typed API, behavior and failure tests, acceptance criteria, and reciprocal ADR/DDD mapping.
-3. Every adapter records exact project pin, license, argv, exit, raw-log hash, parse status, and candidate digest.
-4. Commands are idempotent; denied/incomplete paths never call dispatch, promotion, or registry-current ports.
-5. OpenAPI and generated TypeScript client drift fails verification.
-6. Atomic content-addressed storage and append-only audit support refresh and restart retrieval.
-7. Collector executes rust, backend, frontend, api, middleware, integrations, benchmark, ablations, containers, browser.
-8. Evidence is external, real, exact-SHA bound, and never rebound or handwritten.
-9. Pinned Rust-share measures the whole clean commit and requires hygiene plus at least 50 percent genuine Rust.
-10. Publication is only the controller child after complete verification/review, targets nicholas-ruest, opens non-draft PR, and preserves human merge.
+1. The locked production graph contains exactly the 20 responsibilities in [crate-map.md](crate-map.md); package count alone is never evidence.
+2. Every domain crate owns typed behavior and inline success/failure tests in its existing source file.
+3. The seven upstream projects execute through [crates/cpm-upstreams/src/lib.rs](../crates/cpm-upstreams/src/lib.rs) and the common runtime; metadata/help-only operations do not count.
+4. [crates/cpm-application/src/lib.rs](../crates/cpm-application/src/lib.rs) is the sole decision/persistence transaction boundary. Denied and incomplete decisions never become active.
+5. [api/openapi.yaml](../api/openapi.yaml) is authoritative. [api/client/generate-client.mjs](../api/client/generate-client.mjs) generates the TypeScript schema, and negative drift tests must fail the checker.
+6. Durable storage is append-only and restart-readable. Browser refresh and backend restart must return the same decision without rerunning upstreams.
+7. Benchmark and ablations compare decision quality on the same typed scenario corpus, not merely command success or elapsed time.
+8. The evidence collector executes rust, backend, frontend, api, middleware, integrations, benchmark, ablations, containers, and browser suites into external exact-SHA evidence.
+9. Rust share is measured over the whole clean commit by the pinned helper; no padding, language overrides, or removed frontend behavior.
+10. Publication occurs only as the pinned controller's child after complete verification and semantic review, targeting the personal nicholas-ruest owner and a non-draft PR.

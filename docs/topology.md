@@ -1,7 +1,7 @@
 # Deployment topology
 
-One-command launch starts rootless Rust API and frontend containers on one shared data/evidence volume. Upstreams run as bounded child processes; the service owns no private database. Health covers liveness; readiness verifies store, contract, and adapter configuration.
+[compose.yml](../compose.yml) starts the Rust API and web frontend as rootless containers with a shared durable data boundary. [containers/api.Containerfile](../containers/api.Containerfile) builds the service; [containers/frontend.Containerfile](../containers/frontend.Containerfile) and [containers/nginx.conf](../containers/nginx.conf) serve the React build.
 
-The host forbids privileged networking and cannot assume slirp access to /dev/net/tun. Verification uses compatible host or network-none operation with localhost connectivity and no host-policy change. Cloud Run service and rollback manifests are configuration only.
+The authorized host cannot rely on privileged containers or default slirp access to a tunnel device, so [scripts/container-readiness.sh](../scripts/container-readiness.sh) verifies the compatible host-network topology and localhost readiness. Health is process liveness; readiness includes storage and application usability.
 
-Start, stop, reset, and seed are idempotent. Reset targets only explicit product data. Restart verification retains the shared volume, restarts the backend, and retrieves identical decision/audit hashes through the browser.
+[deploy/cloud-run-service.yaml](../deploy/cloud-run-service.yaml) and [deploy/rollback.env.example](../deploy/rollback.env.example) are configuration only. No deployment or spending is authorized. Restart evidence retains the mounted data boundary, restarts the API, and retrieves the same decision in the browser.

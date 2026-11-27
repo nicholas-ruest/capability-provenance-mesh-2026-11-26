@@ -1,13 +1,15 @@
 # Executed integration matrix
 
-| Project | Category | Production responsibility | Adapter / caller | Intended operation | Substantive failure |
-|---|---|---|---|---|---|
-| Autogenous | Ruvnet | scoped remediation and rollback | cpm-autogenous / cpm-remediation | patch denied candidate in child | invalid patch or rollback mismatch |
-| RuGraph | Ruvnet | causal graph and replay | cpm-rugraph / cpm-graph | materialize required edges | missing edge blocks completeness |
-| Agenticow | Ruvnet | isolated child branch | cpm-agenticow / cpm-quarantine | execute child mutation | escape leaves parent unchanged |
-| AI Text Watermark | Ruvnet | generated explanation provenance | cpm-watermark / cpm-remediation | mark and detect narrative | absent mark reported, never identity |
-| LatentMesh | Ruvnet | signed bounded envelopes | cpm-latentmesh / cpm-receipts | verify fresh envelope | signature, expiry, size, replay reject |
-| SkillSpector | Enterprise | malicious capability inspection | cpm-skillspector / cpm-scan | inspect benign/malicious fixtures | execution or parse failure is incomplete |
-| Cosign | Enterprise | offline attestation | cpm-cosign / cpm-attestation | sign/verify candidate digest | tampered bundle rejects |
+All projects execute through one production integration crate while retaining project-specific types and failure semantics.
 
-All seven are collectively exercised by production workflows with immutable pins, OSS licenses, real call sites, intended/failure tests, and raw source-bound receipts. Help, version, and import-only probes do not count.
+| Project | Typed module | Product responsibility | Intended result | Failure assertion |
+|---|---|---|---|---|
+| Autogenous | [autogenous.rs](../crates/cpm-upstreams/src/autogenous.rs) | scoped remediation proposal | validated change plan tied to parent | empty/invalid plan rejected |
+| RuGraph | [rugraph.rs](../crates/cpm-upstreams/src/rugraph.rs) | causal graph query/replay | graph evidence for candidate | invalid query/result rejected |
+| Agenticow | [agenticow.rs](../crates/cpm-upstreams/src/agenticow.rs) | isolated agent-tool contract | bounded child contract | escaping/invalid contract rejected |
+| AI Text Watermark | [watermark.rs](../crates/cpm-upstreams/src/watermark.rs) | generated text provenance | typed watermark probe | absent/corrupt probe reported, never identity |
+| LatentMesh | [latentmesh.rs](../crates/cpm-upstreams/src/latentmesh.rs) | bounded signed envelope | scoped fresh mesh envelope | invalid envelope rejected |
+| SkillSpector | [skillspector.rs](../crates/cpm-upstreams/src/skillspector.rs) | malicious skill inspection | normalized inspection | invalid/missing inspection becomes failure |
+| Cosign | [cosign.rs](../crates/cpm-upstreams/src/cosign.rs) | offline signature verification | typed verification | tampered bundle rejected |
+
+Shared process evidence comes from [crates/cpm-upstream-runtime/src/lib.rs](../crates/cpm-upstream-runtime/src/lib.rs). The exact pins and success/failure harnesses are under [crates/cpm-service/upstream-harness](../crates/cpm-service/upstream-harness). [crates/cpm-upstreams/src/lib.rs](../crates/cpm-upstreams/src/lib.rs) runs the full suite from production service composition.

@@ -1,16 +1,17 @@
 # Capability Provenance Mesh architecture
 
-A responsive React console calls the checked /api/v1 TypeScript client. Axum applies correlation, observability, errors, timeout, authentication, validation, authorization, and policy before cpm-application. The application owns transactions and calls typed domain crates, seven pinned adapters, and atomic shared storage. Adapters cannot update the registry.
+Capability Provenance Mesh decides whether an executable capability pack may become active. The product preserves the causal chain from submitted bytes through declarations, seven upstream observations, trial state, admission, persistence, and rendered operator feedback.
 
-## Flow
+## Runtime path
 
-1. Digest and quarantine candidate; bind exact source and license.
-2. Cosign verifies identity; SkillSpector inspects content.
-3. Agenticow creates a child branch; bounded trials capture behavior.
-4. LatentMesh carries signed expiring observations; RuGraph materializes evidence.
-5. Policy checks graph completeness, risk, and monotonic attenuation.
-6. Autogenous may propose repair; AI Text Watermark marks generated explanation.
-7. Scoped operator approval gates atomic attestation, audit, and registry promotion.
-8. Queries reconstruct the result after refresh and backend restart.
+The React operator console in [frontend/src/ProductApp.tsx](../frontend/src/ProductApp.tsx) calls the generated client whose contract originates in [api/openapi.yaml](../api/openapi.yaml). The Axum composition root in [crates/cpm-service/src/lib.rs](../crates/cpm-service/src/lib.rs) enforces authentication, role authorization, policy, validation, timeout, correlation, tracing, and error envelopes before dispatching to [crates/cpm-application/src/lib.rs](../crates/cpm-application/src/lib.rs).
 
-Untrusted bytes remain quarantined. Tool output is evidence, transport signature is not authorization, watermark is not identity, and denied/incomplete cases have zero downstream effects. Governance plus human approval is the only promotion authority.
+Application orchestration performs intake, manifest parsing, capability evaluation, lineage, scenario/trial construction, seven typed upstream integrations, observation normalization, effect-graph completeness, risk, and admission. It appends decisions and audit data through [crates/cpm-store/src/lib.rs](../crates/cpm-store/src/lib.rs), then writes active state through [crates/cpm-registry/src/lib.rs](../crates/cpm-registry/src/lib.rs) only for accepted outcomes.
+
+## Integration boundary
+
+Process mechanics live in [crates/cpm-upstream-runtime/src/lib.rs](../crates/cpm-upstream-runtime/src/lib.rs). Project semantics live in distinct modules under [crates/cpm-upstreams/src](../crates/cpm-upstreams/src). This keeps one meaningful integration crate without erasing the seven different requests, validations, and failure modes.
+
+## No-effect guarantee
+
+Denied and incomplete decisions are durable and queryable but never active. Browser restart retrieval reads stored projections; it does not rerun integrations. [ADR-012](adr/012.md), [ADR-019](adr/019.md), and [DDD-011](ddd/011.md) define the reciprocal boundaries.

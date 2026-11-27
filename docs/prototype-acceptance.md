@@ -1,16 +1,18 @@
 # Complete-product acceptance map
 
-| Gate | Passing condition | Evidence |
+| Area | Acceptance condition | Source-bound proof |
 |---|---|---|
-| Backend | 20+ meaningful reachable crates and real service/application | locked metadata and composition schema 2 |
-| Design | 25 unique ADRs and 12 DDDs with code/test/evidence | document hashes and semantic review |
-| Frontend | responsive React domain views and lifecycle states | type/lint/unit/build, screenshots |
-| API/middleware | checked v1 client and ordered controls | drift and failure matrix |
-| Integrations | five Ruvnet plus two enterprise intended/failure operations | raw logs and integration tests |
-| Journeys | primary; denial/recovery zero effects; refresh/restart | Playwright, screenshots, correlation |
-| Delivery | deterministic scripts, rootless topology, readiness, Cloud Run config | container receipt |
-| Evidence | ten suites, schema-2 reports, semantic review, exact metadata | canonical verifier plus review |
-| Rust | clean hygiene and at least 50 percent genuine Rust | rust-share JSON and exact-head step |
-| Publication | controller parents personal-owner publisher; non-draft PR | negative control, receipt, refs, CI |
+| backend | exactly 20 meaningful crates, all reachable and tested | locked metadata plus composition schema 2 |
+| design | 25 distinct ADRs and 12 DDD records with only existing linked paths | document hashes, path validator, semantic review |
+| frontend | domain-specific responsive React with lifecycle and accessibility states | unit/build plus desktop/mobile journey screenshots |
+| API | OpenAPI generates the client; type/required-field mutation fails | API drift and negative contract tests |
+| middleware | authn, role authz, policy, validation, correlation, timeout, tracing, errors execute before effects | failure matrix and correlation trace |
+| integrations | five Ruvnet and two enterprise responsibilities execute intended/failure paths | seven raw logs, receipts, pins, licenses |
+| primary journey | submission renders evidence-backed decision | Playwright report/trace |
+| denial and recovery | denied digest never activates; repaired digest re-evaluates | before/after registry proof and correlated trace |
+| durable journey | refresh and backend restart retrieve identical record | restart receipt and rendered audit |
+| frontier evaluation | baseline/full metrics plus named mechanism-off deltas | benchmark and ablation JSON |
+| containers | rootless API/web topology builds, readies, persists, and stops | container receipt/inspect |
+| evidence/publication | ten suite receipts, schema-2 reports, review, Rust floor, controller order | exact-SHA external directory and exact-head CI |
 
-Any missing row forbids BUILT. A slice, smoke test, bundle pass, or recorder acknowledgement is not completion.
+Any missing row forbids BUILT; a smoke test or recorder acknowledgement cannot substitute for this conjunction.

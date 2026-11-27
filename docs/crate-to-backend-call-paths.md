@@ -1,14 +1,14 @@
 # Crate-to-backend call paths
 
-| Use case | Production call path | Result |
+| Operation | Real call path | Stored/rendered result |
 |---|---|---|
-| intake | service to application to intake/lineage/manifest/capabilities to store/audit | workbench candidate |
-| inspect | application to scan/SkillSpector/Cosign to receipts/graph/RuGraph | findings and graph |
-| trial | application to quarantine/Agenticow/trial/LatentMesh to graph | observations |
-| decide | application to risk/policy/completeness to audit | approved/denied/incomplete |
-| remediate | application to Autogenous/remediation/watermark to intake | new digest |
-| promote | application to policy/attestation/Cosign to registry/store/audit | atomic current |
-| rollback | application to Autogenous/registry/store/audit | prior digest current |
-| audit query | service to application to audit/store | restart timeline |
+| submit intake | ProductApp -> generated client -> service -> application -> artifact-intake -> manifest -> capability-model -> lineage | candidate digest and declaration |
+| gather evidence | application -> cpm-upstreams UpstreamSet -> cpm-upstream-runtime -> pinned harness -> observation -> receipts | seven hashed observations |
+| decide | application -> effect-graph -> risk -> trial-state -> admission | Accepted, Denied, or Incomplete decision |
+| persist | application -> store append -> registry activate only when accepted | audit history and active projection |
+| query after restart | service GET -> store/registry read -> typed API -> ProductApp | same decision and active state |
+| remediate | application -> Autogenous typed module -> remediation -> new intake | child digest with parent lineage |
 
-The composition root supplies every port. Denial paths never reach dispatch, promotion, or current-pointer writes.
+The concrete service and application implementations are [crates/cpm-service/src/lib.rs](../crates/cpm-service/src/lib.rs) and [crates/cpm-application/src/lib.rs](../crates/cpm-application/src/lib.rs). The seven integration modules are indexed by [crates/cpm-upstreams/src/lib.rs](../crates/cpm-upstreams/src/lib.rs). Browser proof is executed by [scripts/browser-journeys.spec.cjs](../scripts/browser-journeys.spec.cjs).
+
+No path permits an adapter to write active registry state. The application completes admission first, persists the decision, and conditionally activates accepted candidates.

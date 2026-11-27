@@ -1,15 +1,15 @@
-# Research and product hypothesis
+# Research and frontier hypothesis
 
 ## Hypothesis
 
-A causal evidence graph plus monotonic authority attenuation and isolated trials reduces unsafe capability-pack admission without making safe remediation unusable. The benchmark compares full composition with graph, attenuation, quarantine, and provenance ablations over frozen benign, malicious, ambiguous, tampered, and timeout cases.
+Causal evidence completeness plus monotone capability attenuation and multi-upstream consensus will reduce unsafe capability admission relative to a declaration-and-risk baseline while retaining acceptance of safe candidates within a bounded runtime cost.
 
-Research screened at least ten Ruvnet and five enterprise candidates. Readiness selected Autogenous, RuGraph, Agenticow, AI Text Watermark, LatentMesh, NVIDIA SkillSpector, and Sigstore Cosign because each supplies a complementary runtime responsibility and substantive failure path. Exact pins, licenses, probe receipts, and history truth live in selection-report schema 1.
+The typed corpus is owned by [crates/cpm-scenarios/src/lib.rs](../crates/cpm-scenarios/src/lib.rs). [crates/cpm-application/src/bin/benchmark.rs](../crates/cpm-application/src/bin/benchmark.rs) compares baseline and full mechanism on unsafe admissions, safe acceptance, and elapsed time. [crates/cpm-application/src/bin/ablation.rs](../crates/cpm-application/src/bin/ablation.rs) disables graph completeness, authority attenuation, lineage enforcement, and upstream consensus individually. Shared experiment construction is in [experiment_support/mod.rs](../crates/cpm-application/src/bin/experiment_support/mod.rs).
+
+## Selected ingredients
+
+Autogenous, RuGraph, Agenticow, AI Text Watermark, and LatentMesh provide complementary Ruvnet responsibilities. NVIDIA SkillSpector and Sigstore Cosign supply enterprise inspection and attestation. Exact pins and licenses are recorded by [upstreams.lock.json](../crates/cpm-service/upstream-harness/upstreams.lock.json).
 
 ## Verified examples
 
-- Mandate Mesh fa6e7ce708528d2a2a1d466d5524e99da2930323 establishes the full-product shape: multi-crate Rust, React, three journeys, restart retrieval, containers, and semantic evidence.
-- ToolRecall ae214d5141256370664a0ad008cfb57b22f33590 demonstrates source-bound status and truthful publication/Gist blockers.
-- JitterMap 53b400f39adfec140dda2f8ef02c4f5ca4265cb3 demonstrates bounded fail-closed federation and authority-none receipts.
-
-These are independently verified examples, not automatically approved learned policy.
+Mandate Mesh at fa6e7ce708528d2a2a1d466d5524e99da2930323 establishes full-product shape. ToolRecall at ae214d5141256370664a0ad008cfb57b22f33590 demonstrates source-bound status and truthful blockers. JitterMap at 53b400f39adfec140dda2f8ef02c4f5ca4265cb3 demonstrates bounded transport without implicit authority. These are independently verified examples, not automatically approved learned policy.

@@ -1,5 +1,7 @@
 # Genuine Rust source budget
 
-Rust owns domain, orchestration, storage, seven adapters, and service; TypeScript remains a real React frontend and generated client; scripts remain useful verification.
+Rust owns all 20 backend responsibilities in [crate-map.md](crate-map.md), including domain logic, typed integrations, application orchestration, persistence, middleware, and service composition. TypeScript remains a functional React product and generated API client; shell and JavaScript remain useful delivery/evidence tooling.
 
-The pinned rust-share helper, not crate count or language badges, scans all recognized tracked source across the exact clean commit, including frontend, tests, integration code, shell, and evidence tooling. It rejects dirty source, tracked dependency/build/cache/session state, and language gaming. Passing requires at least 50 percent genuine Rust without padding, duplication, or removing product behavior. Complete JSON inventory is external and repeats as a separate exact-head CI step before canonical verification.
+[scripts/dream-machine-rust-share.mjs](../scripts/dream-machine-rust-share.mjs) is the authority. It scans recognized tracked source across the exact clean commit, including frontend, tests, integrations, shell, and evidence tooling. It rejects dirty source, tracked dependency/build/cache/session state, language overrides, and suspicious duplication.
+
+Passing requires at least 50 percent genuine Rust without padding, ceremonial crates, or deleting product behavior. Complete JSON inventory is external and repeats as a separate exact-head CI step before canonical verification.

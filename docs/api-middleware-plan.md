@@ -1,9 +1,7 @@
 # API and middleware contract
 
-/api/v1 comes from committed OpenAPI; React imports only the generated TypeScript client.
+[api/openapi.yaml](../api/openapi.yaml) is the sole API contract. [api/client/generate-client.mjs](../api/client/generate-client.mjs) generates [api/client/schema.ts](../api/client/schema.ts); the official checker performs structural comparison. [tests/api/contract-drift.test.sh](../tests/api/contract-drift.test.sh) proves a required/type mutation is detected.
 
-Order: correlation, observability, error mapping, timeout, authentication, schema validation, role authorization, domain policy, handler. Correlation and errors wrap every response; no-effect guards precede dispatch.
+[crates/cpm-service/src/lib.rs](../crates/cpm-service/src/lib.rs) applies correlation, tracing, timeout, authentication, role authorization, policy, validation, and stable errors before calling the application. Failure cases cannot dispatch upstreams or activate registry state.
 
-Failure tests cover missing/invalid credentials, forbidden role, malformed body, unsupported media type, stale state, policy denial, incomplete evidence, timeout, and adapter fault. Responses carry stable code, safe message, correlation ID, and retryability. Denied requests make zero dispatch, promotion, and registry-current calls.
-
-Authenticated candidate-scoped SSE uses persisted cursors, bounded replay, heartbeats, and terminal closure. Durable query state is authoritative.
+The generated runtime in [api/client/runtime.ts](../api/client/runtime.ts) is the frontend network boundary. ProductApp renders server-owned outcomes instead of recomputing governance. Browser traces must carry the same correlation ID through response, receipts, store, and audit query.

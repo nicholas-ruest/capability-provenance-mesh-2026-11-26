@@ -1,13 +1,14 @@
-//! Leave-one-upstream-out ablation of semantic evidence closure.
+//! Component and leave-one-upstream-out ablations of semantic evidence closure.
 mod experiment_support;
 
 use cpm_application::ApplicationError;
 use experiment_support::{
-    EvidenceSuite, Ingredient, application, file_count, request, unique_root,
+    EvidenceSuite, FrontierFault, FrontierMetrics, Ingredient, MechanismComponent, MechanismConfig,
+    application, evaluate_frontier, file_count, frontier_corpus, request, unique_root,
 };
 use serde::Serialize;
 
-const HYPOTHESIS: &str = "admission requires a complete seven-responsibility evidence closure; removing any one responsibility blocks activation before a durable active write";
+const HYPOTHESIS: &str = "each frontier component uniquely blocks its isolated unsafe class; removing any credited upstream also blocks production activation before a durable active write";
 
 #[derive(Debug, Serialize)]
 struct FullMechanism {
@@ -19,7 +20,16 @@ struct FullMechanism {
 }
 
 #[derive(Debug, Serialize)]
-struct AblationResult {
+struct ComponentAblation {
+    disabled: MechanismComponent,
+    exposed_fault: FrontierFault,
+    metrics: FrontierMetrics,
+    balanced_quality_delta_vs_full_bps: i64,
+    assertion_passed: bool,
+}
+
+#[derive(Debug, Serialize)]
+struct UpstreamAblation {
     omitted: Ingredient,
     remaining_receipts: usize,
     admission: &'static str,
@@ -35,7 +45,10 @@ struct Report {
     ablation: &'static str,
     hypothesis: &'static str,
     full_mechanism: FullMechanism,
-    leave_one_out: Vec<AblationResult>,
+    frontier_baseline: FrontierMetrics,
+    frontier_full: FrontierMetrics,
+    component_ablations: Vec<ComponentAblation>,
+    leave_one_out: Vec<UpstreamAblation>,
     assertion_passed: bool,
 }
 
@@ -59,7 +72,31 @@ fn full_mechanism() -> FullMechanism {
     }
 }
 
-fn ablate(ingredient: Ingredient) -> AblationResult {
+fn ablate_component(
+    component: MechanismComponent,
+    corpus: &[experiment_support::FrontierCase],
+    full_quality_bps: usize,
+) -> ComponentAblation {
+    let exposed_fault = component.fault();
+    let metrics = evaluate_frontier(corpus, &MechanismConfig::without(component));
+    let assertion_passed = metrics.safe_admitted == metrics.safe_candidates
+        && metrics.unsafe_admitted == 5
+        && metrics.unsafe_admissions_by_fault.len() == 1
+        && metrics.unsafe_admissions_by_fault.get(&exposed_fault) == Some(&5)
+        && metrics.forbidden_active_writes == 0
+        && metrics.balanced_quality_bps < full_quality_bps;
+    ComponentAblation {
+        disabled: component,
+        exposed_fault,
+        balanced_quality_delta_vs_full_bps: i64::try_from(metrics.balanced_quality_bps)
+            .expect("quality basis points fit i64")
+            - i64::try_from(full_quality_bps).expect("quality basis points fit i64"),
+        metrics,
+        assertion_passed,
+    }
+}
+
+fn ablate_upstream(ingredient: Ingredient) -> UpstreamAblation {
     let root = unique_root("ablation-one");
     let app = application(&root, EvidenceSuite::without(ingredient));
     let result = app.submit(request("1.0.0", false));
@@ -71,7 +108,7 @@ fn ablate(ingredient: Ingredient) -> AblationResult {
         && durable_decision_writes == 0
         && durable_active_writes == 0
         && forbidden_active_writes == 0;
-    AblationResult {
+    UpstreamAblation {
         omitted: ingredient,
         remaining_receipts: 6,
         admission: if blocked { "blocked" } else { "unexpected" },
@@ -83,23 +120,44 @@ fn ablate(ingredient: Ingredient) -> AblationResult {
 }
 
 fn main() {
-    let full_mechanism = full_mechanism();
-    let leave_one_out: Vec<_> = Ingredient::ALL.into_iter().map(ablate).collect();
-    let assertion_passed = full_mechanism.safe_admitted
-        && full_mechanism.denial_blocked
-        && full_mechanism.evidence_receipts_per_decision == 7
-        && full_mechanism.durable_active_writes == 1
-        && full_mechanism.forbidden_active_writes == 0
-        && leave_one_out.iter().all(|result| result.assertion_passed);
-    assert!(assertion_passed, "upstream ablation hypothesis failed");
+    let production_full = full_mechanism();
+    let corpus = frontier_corpus();
+    let frontier_baseline = evaluate_frontier(&corpus, &MechanismConfig::baseline());
+    let frontier_full = evaluate_frontier(&corpus, &MechanismConfig::full());
+    let component_ablations: Vec<_> = MechanismComponent::ALL
+        .into_iter()
+        .map(|component| ablate_component(component, &corpus, frontier_full.balanced_quality_bps))
+        .collect();
+    let leave_one_upstream_out: Vec<_> = Ingredient::ALL.into_iter().map(ablate_upstream).collect();
+    let assertion_passed = production_full.safe_admitted
+        && production_full.denial_blocked
+        && production_full.evidence_receipts_per_decision == 7
+        && production_full.durable_active_writes == 1
+        && production_full.forbidden_active_writes == 0
+        && frontier_baseline.unsafe_admitted == frontier_baseline.unsafe_candidates
+        && frontier_baseline.balanced_quality_bps == 5_000
+        && frontier_full.safe_admitted == frontier_full.safe_candidates
+        && frontier_full.unsafe_admitted == 0
+        && frontier_full.balanced_quality_bps == 10_000
+        && frontier_full.forbidden_active_writes == 0
+        && component_ablations
+            .iter()
+            .all(|result| result.assertion_passed)
+        && leave_one_upstream_out
+            .iter()
+            .all(|result| result.assertion_passed);
+    assert!(assertion_passed, "frontier ablation hypothesis failed");
     println!(
         "{}",
         serde_json::to_string(&Report {
             schema_version: 2,
-            ablation: "leave-one-upstream-responsibility-out",
+            ablation: "frontier-component-and-upstream-responsibility",
             hypothesis: HYPOTHESIS,
-            full_mechanism,
-            leave_one_out,
+            full_mechanism: production_full,
+            frontier_baseline,
+            frontier_full,
+            component_ablations,
+            leave_one_out: leave_one_upstream_out,
             assertion_passed,
         })
         .expect("ablation report serialization")

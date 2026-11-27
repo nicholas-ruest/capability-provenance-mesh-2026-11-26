@@ -2,13 +2,14 @@
 mod experiment_support;
 
 use experiment_support::{
-    EvidenceSuite, application, file_count, manifest_only_admits, request, unique_root,
+    EvidenceSuite, FrontierMetrics, MechanismConfig, application, evaluate_frontier, file_count,
+    frontier_corpus, manifest_only_admits, request, unique_root,
 };
 use serde::Serialize;
 use std::time::Instant;
 
 const WORKLOAD_SIZE: usize = 40;
-const HYPOTHESIS: &str = "source-bound semantic evidence closure eliminates unsafe manifest-only admissions while preserving safe admissions with bounded latency";
+const HYPOTHESIS: &str = "graph completeness, monotone authority, lineage binding, and seven-source consensus eliminate unsafe manifest-only admissions while preserving safe admissions with bounded latency";
 
 #[derive(Debug, Serialize)]
 struct Metrics {
@@ -31,6 +32,9 @@ struct Report {
     workload: &'static str,
     baseline: Metrics,
     mechanism: Metrics,
+    frontier_baseline: FrontierMetrics,
+    frontier_full: FrontierMetrics,
+    balanced_quality_gain_bps: usize,
     assertion_passed: bool,
 }
 
@@ -106,23 +110,37 @@ fn mechanism() -> Metrics {
 }
 
 fn main() {
-    let baseline = baseline();
-    let mechanism = mechanism();
-    let assertion_passed = baseline.false_admits == WORKLOAD_SIZE / 2
-        && mechanism.false_admits == 0
-        && mechanism.forbidden_active_writes == 0
-        && mechanism.admitted == WORKLOAD_SIZE / 2
-        && mechanism.evidence_receipts == WORKLOAD_SIZE * 7;
-    assert!(assertion_passed, "frontier benchmark hypothesis failed");
+    let manifest_baseline = baseline();
+    let production_mechanism = mechanism();
+    let corpus = frontier_corpus();
+    let frontier_baseline = evaluate_frontier(&corpus, &MechanismConfig::baseline());
+    let frontier_full = evaluate_frontier(&corpus, &MechanismConfig::full());
+    let balanced_quality_gain_bps = frontier_full
+        .balanced_quality_bps
+        .saturating_sub(frontier_baseline.balanced_quality_bps);
+    let assertion_passed = manifest_baseline.false_admits == WORKLOAD_SIZE / 2
+        && production_mechanism.false_admits == 0
+        && production_mechanism.forbidden_active_writes == 0
+        && production_mechanism.admitted == WORKLOAD_SIZE / 2
+        && production_mechanism.evidence_receipts == WORKLOAD_SIZE * 7
+        && frontier_baseline.unsafe_admitted == frontier_baseline.unsafe_candidates
+        && frontier_full.safe_admitted == frontier_full.safe_candidates
+        && frontier_full.unsafe_admitted == 0
+        && frontier_full.forbidden_active_writes == 0
+        && balanced_quality_gain_bps == 5_000;
+    assert!(assertion_passed, "benchmark hypothesis failed");
     println!(
         "{}",
         serde_json::to_string(&Report {
             schema_version: 2,
-            benchmark: "manifest-only-vs-semantic-evidence-closure",
+            benchmark: "fixed-corpus-frontier-evidence-closure",
             hypothesis: HYPOTHESIS,
-            workload: "40 deterministic candidates: 20 safe and 20 with an undeclared observed network effect",
-            baseline,
-            mechanism,
+            workload: "40 end-to-end decisions plus 25 typed component-isolation decisions",
+            baseline: manifest_baseline,
+            mechanism: production_mechanism,
+            frontier_baseline,
+            frontier_full,
+            balanced_quality_gain_bps,
             assertion_passed,
         })
         .expect("benchmark report serialization")

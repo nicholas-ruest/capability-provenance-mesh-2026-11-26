@@ -1,6 +1,9 @@
 #![allow(dead_code)]
 
 use cpm_application::{Application, IntakeRequest, UpstreamSuite};
+use cpm_capability_model::CapabilitySet;
+use cpm_effect_graph::{Edge, EffectGraph};
+use cpm_lineage::Lineage;
 use cpm_manifest::{Manifest, VERSION};
 use cpm_store::DirectoryStore;
 use cpm_upstreams::{
@@ -10,9 +13,15 @@ use cpm_upstreams::{
     SKILLSPECTOR_REVISION, WATERMARK_REPOSITORY, WATERMARK_REVISION,
 };
 use serde::Serialize;
-use std::{collections::BTreeSet, fs, path::Path, time::SystemTime};
+use sha2::{Digest, Sha256};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fs,
+    path::Path,
+    time::SystemTime,
+};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Ingredient {
     Autogenous,
@@ -123,6 +132,243 @@ impl UpstreamSuite for EvidenceSuite {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum FrontierFault {
+    None,
+    GraphGap,
+    AuthorityEscalation,
+    LineageMismatch,
+    ConsensusGap,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum MechanismComponent {
+    GraphCompleteness,
+    AuthorityAttenuation,
+    LineageEnforcement,
+    UpstreamConsensus,
+}
+
+impl MechanismComponent {
+    pub const ALL: [Self; 4] = [
+        Self::GraphCompleteness,
+        Self::AuthorityAttenuation,
+        Self::LineageEnforcement,
+        Self::UpstreamConsensus,
+    ];
+
+    pub const fn fault(self) -> FrontierFault {
+        match self {
+            Self::GraphCompleteness => FrontierFault::GraphGap,
+            Self::AuthorityAttenuation => FrontierFault::AuthorityEscalation,
+            Self::LineageEnforcement => FrontierFault::LineageMismatch,
+            Self::UpstreamConsensus => FrontierFault::ConsensusGap,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct MechanismConfig {
+    enabled: BTreeSet<MechanismComponent>,
+}
+
+impl MechanismConfig {
+    pub fn baseline() -> Self {
+        Self {
+            enabled: BTreeSet::new(),
+        }
+    }
+
+    pub fn full() -> Self {
+        Self {
+            enabled: MechanismComponent::ALL.into_iter().collect(),
+        }
+    }
+
+    pub fn without(component: MechanismComponent) -> Self {
+        let mut config = Self::full();
+        config.enabled.remove(&component);
+        config
+    }
+
+    fn contains(&self, component: MechanismComponent) -> bool {
+        self.enabled.contains(&component)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct FrontierCase {
+    pub id: String,
+    pub fault: FrontierFault,
+    pub artifact: Vec<u8>,
+    pub declared: CapabilitySet,
+    pub observed: CapabilitySet,
+    pub graph: EffectGraph,
+    pub lineage: Lineage,
+    pub upstream_receipts: usize,
+}
+
+impl FrontierCase {
+    pub fn expected_safe(&self) -> bool {
+        self.fault == FrontierFault::None
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FrontierMetrics {
+    pub decisions: usize,
+    pub safe_candidates: usize,
+    pub unsafe_candidates: usize,
+    pub safe_admitted: usize,
+    pub unsafe_admitted: usize,
+    pub unsafe_blocked: usize,
+    pub safe_acceptance_bps: usize,
+    pub unsafe_block_bps: usize,
+    pub balanced_quality_bps: usize,
+    pub unsafe_admissions_by_fault: BTreeMap<FrontierFault, usize>,
+    pub forbidden_active_writes: usize,
+}
+
+pub fn frontier_corpus() -> Vec<FrontierCase> {
+    const REPETITIONS: usize = 5;
+    let mut cases = Vec::with_capacity(REPETITIONS * 5);
+    for repetition in 0..REPETITIONS {
+        for fault in [
+            FrontierFault::None,
+            FrontierFault::GraphGap,
+            FrontierFault::AuthorityEscalation,
+            FrontierFault::LineageMismatch,
+            FrontierFault::ConsensusGap,
+        ] {
+            cases.push(frontier_case(repetition, fault));
+        }
+    }
+    cases
+}
+
+fn frontier_case(repetition: usize, fault: FrontierFault) -> FrontierCase {
+    let artifact = format!("deterministic-frontier-artifact-{repetition}-{fault:?}").into_bytes();
+    let declared = CapabilitySet::new(["blob.read".to_string()]);
+    let observed_capability = if fault == FrontierFault::AuthorityEscalation {
+        "net.open"
+    } else {
+        "blob.read"
+    };
+    let observed = CapabilitySet::new([observed_capability.to_string()]);
+    let mut graph = EffectGraph::default();
+    if fault != FrontierFault::GraphGap {
+        graph
+            .add(Edge {
+                from: "artifact".into(),
+                to: observed_capability.into(),
+                evidence: digest(format!("edge-{repetition}-{fault:?}").as_bytes()),
+                trusted: true,
+            })
+            .expect("frontier corpus edge must be valid");
+    }
+    let artifact_digest = if fault == FrontierFault::LineageMismatch {
+        "f".repeat(64)
+    } else {
+        digest(&artifact)
+    };
+    FrontierCase {
+        id: format!("frontier-{repetition}-{fault:?}"),
+        fault,
+        artifact,
+        declared,
+        observed,
+        graph,
+        lineage: Lineage {
+            source: digest(format!("source-{repetition}").as_bytes()),
+            lock: digest(format!("lock-{repetition}").as_bytes()),
+            plan: digest(format!("plan-{repetition}").as_bytes()),
+            artifact: artifact_digest,
+        },
+        upstream_receipts: if fault == FrontierFault::ConsensusGap {
+            Ingredient::ALL.len() - 1
+        } else {
+            Ingredient::ALL.len()
+        },
+    }
+}
+
+pub fn frontier_admits(case: &FrontierCase, config: &MechanismConfig) -> bool {
+    if config.contains(MechanismComponent::GraphCompleteness)
+        && case
+            .observed
+            .values()
+            .iter()
+            .any(|effect| !case.graph.reachable("artifact", effect))
+    {
+        return false;
+    }
+    if config.contains(MechanismComponent::AuthorityAttenuation)
+        && case.declared.attenuate(&case.observed).is_err()
+    {
+        return false;
+    }
+    if config.contains(MechanismComponent::LineageEnforcement)
+        && case.lineage.verify(&case.artifact).is_err()
+    {
+        return false;
+    }
+    if config.contains(MechanismComponent::UpstreamConsensus)
+        && case.upstream_receipts != Ingredient::ALL.len()
+    {
+        return false;
+    }
+    true
+}
+
+pub fn evaluate_frontier(cases: &[FrontierCase], config: &MechanismConfig) -> FrontierMetrics {
+    let safe_candidates = cases.iter().filter(|case| case.expected_safe()).count();
+    let unsafe_candidates = cases.len() - safe_candidates;
+    let mut safe_admitted = 0;
+    let mut unsafe_admitted = 0;
+    let mut unsafe_admissions_by_fault = BTreeMap::new();
+    for case in cases {
+        if frontier_admits(case, config) {
+            if case.expected_safe() {
+                safe_admitted += 1;
+            } else {
+                unsafe_admitted += 1;
+                *unsafe_admissions_by_fault.entry(case.fault).or_insert(0) += 1;
+            }
+        }
+    }
+    let unsafe_blocked = unsafe_candidates - unsafe_admitted;
+    let safe_acceptance_bps = ratio_bps(safe_admitted, safe_candidates);
+    let unsafe_block_bps = ratio_bps(unsafe_blocked, unsafe_candidates);
+    FrontierMetrics {
+        decisions: cases.len(),
+        safe_candidates,
+        unsafe_candidates,
+        safe_admitted,
+        unsafe_admitted,
+        unsafe_blocked,
+        safe_acceptance_bps,
+        unsafe_block_bps,
+        balanced_quality_bps: safe_acceptance_bps.midpoint(unsafe_block_bps),
+        unsafe_admissions_by_fault,
+        // The frontier evaluator is deliberately pre-persistence. An unsafe decision is
+        // observable in the metrics but is never forwarded to DirectoryStore.
+        forbidden_active_writes: 0,
+    }
+}
+
+fn ratio_bps(numerator: usize, denominator: usize) -> usize {
+    numerator
+        .saturating_mul(10_000)
+        .checked_div(denominator)
+        .unwrap_or(0)
+}
+
+fn digest(bytes: &[u8]) -> String {
+    format!("{:x}", Sha256::digest(bytes))
+}
+
 pub fn request(version: impl Into<String>, denial_probe: bool) -> IntakeRequest {
     IntakeRequest {
         plugin: "fixed-workload-plugin".into(),
@@ -197,5 +443,31 @@ mod tests {
     #[test]
     fn manifest_only_baseline_misses_observed_effect() {
         assert!(manifest_only_admits(&request("unsafe", true)));
+    }
+
+    #[test]
+    fn full_frontier_mechanism_blocks_each_distinct_fault() {
+        let cases = frontier_corpus();
+        let metrics = evaluate_frontier(&cases, &MechanismConfig::full());
+        assert_eq!(metrics.safe_admitted, 5);
+        assert_eq!(metrics.unsafe_admitted, 0);
+        assert_eq!(metrics.balanced_quality_bps, 10_000);
+        assert_eq!(metrics.forbidden_active_writes, 0);
+    }
+
+    #[test]
+    fn each_component_ablation_exposes_only_its_target_fault() {
+        let cases = frontier_corpus();
+        for component in MechanismComponent::ALL {
+            let metrics = evaluate_frontier(&cases, &MechanismConfig::without(component));
+            assert_eq!(metrics.safe_admitted, 5);
+            assert_eq!(metrics.unsafe_admitted, 5);
+            assert_eq!(metrics.balanced_quality_bps, 8_750);
+            assert_eq!(
+                metrics.unsafe_admissions_by_fault,
+                BTreeMap::from([(component.fault(), 5)])
+            );
+            assert_eq!(metrics.forbidden_active_writes, 0);
+        }
     }
 }

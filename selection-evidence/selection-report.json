@@ -1,0 +1,833 @@
+{
+  "schema_version": 1,
+  "attempt_id": "e4167056-ce98-832f-b1c9-92740e1d9d99",
+  "date": "2026-11-26",
+  "selected_at": "2026-11-27T03:13:00.000Z",
+  "probe_source_sha": "4106f742712cb8886d82d586892c9663071d4527",
+  "probe_source_archive": {
+    "path": "probes/archive/probe-harness-4106f742712cb8886d82d586892c9663071d4527.tar.gz",
+    "sha256": "6df1d25ac21ad2269c48dc1cdf5040bbecdc09ab04e4e4cd49e2b504cd94c31c"
+  },
+  "product": {
+    "users": "Platform security and AI infrastructure teams admitting, denying, repairing, and replaying third-party agent capabilities.",
+    "capability": "Evidence-closed adaptive capability admission and replay that scans bundles, evaluates authority and reversibility, quarantines effects, signs admitted artifacts, and preserves durable audit retrieval.",
+    "bounded_contexts": [
+      "Capability Intake and Provenance",
+      "Adaptive Admission Policy",
+      "Quarantine and Replay",
+      "Attestation and Audit"
+    ],
+    "topology": {
+      "frontend": "Responsive React/TypeScript admission workbench with intake, evidence graph, repair, replay, and audit views.",
+      "backend": "Versioned Rust API and composition root spanning admission, graph, quarantine, provenance, attestation, persistence, benchmark, and replay.",
+      "middleware": "Ordered authn, authz, policy, validation, error, correlation, timeout, and observability controls denying before effects.",
+      "persistence": "Durable shared-storage decisions, audit, receipts, and replay surviving refresh and restart."
+    },
+    "workflows": [
+      {
+        "name": "primary",
+        "user_outcome": "Submit a benign bundle, scan and graph evidence, quarantine it, sign the admitted artifact, and render its receipt."
+      },
+      {
+        "name": "denial-recovery",
+        "user_outcome": "Deny authority expansion with zero dispatch/parent mutation, repair the manifest, and admit the corrected bundle."
+      },
+      {
+        "name": "durable-retrieval",
+        "user_outcome": "Retrieve the saved decision, provenance, and audit after browser refresh and backend restart."
+      }
+    ]
+  },
+  "shortlist": [
+    {
+      "repo": "ruvnet/autogenous",
+      "category": "ruvnet",
+      "revision": "3155111ae78039c3993a544044a9cac041090ea6",
+      "license": "MIT",
+      "capability": "Typed capability mutation, hard fitness gates, signed promotion, and verified rollback.",
+      "rationale": "Selected for reversible adaptive admission with authority ceilings and hard promotion gates.",
+      "decision": "selected",
+      "source_url": "https://github.com/ruvnet/autogenous/tree/3155111ae78039c3993a544044a9cac041090ea6"
+    },
+    {
+      "repo": "ruvnet/ruGraph",
+      "category": "ruvnet",
+      "revision": "d66d976c0ba8fa792fcf024c2a07b51480e4fbf1",
+      "license": "MIT",
+      "capability": "Capability dependency/evidence graph with uncertainty-preserving inference, sensitivity audit, and exact replay.",
+      "rationale": "Selected for evidence-closed, explainable, replayable decisions.",
+      "decision": "selected",
+      "source_url": "https://github.com/ruvnet/ruGraph/tree/d66d976c0ba8fa792fcf024c2a07b51480e4fbf1"
+    },
+    {
+      "repo": "ruvnet/agenticow",
+      "category": "ruvnet",
+      "revision": "a6467863e250371562c2e0c83f5f993459607746",
+      "license": "MIT",
+      "capability": "Copy-on-write quarantine branches with checkpoint, diff, promote, rollback, and parent isolation.",
+      "rationale": "Selected so denied or poisoned evidence cannot mutate durable parent state.",
+      "decision": "selected",
+      "source_url": "https://github.com/ruvnet/agenticow/tree/a6467863e250371562c2e0c83f5f993459607746"
+    },
+    {
+      "repo": "ruvnet/ai-text-watermark",
+      "category": "ruvnet",
+      "revision": "5871cf5fef6547c97626ba72d976f167562dab2a",
+      "license": "MIT",
+      "capability": "Keyed provenance marking and verification for generated admission explanations and runbooks.",
+      "rationale": "Selected to give operator guidance a verifiable provenance signal without treating it as identity proof.",
+      "decision": "selected",
+      "source_url": "https://github.com/ruvnet/ai-text-watermark/tree/5871cf5fef6547c97626ba72d976f167562dab2a"
+    },
+    {
+      "repo": "ruvnet/LatentMesh",
+      "category": "ruvnet",
+      "revision": "b04a70523196181aadc6d694e02de1f5722fae6b",
+      "license": "Apache-2.0 OR MIT",
+      "capability": "Offline bounded-message transport with fragmentation, reassembly, authentication, and replay protection.",
+      "rationale": "Selected after loopback success/failure probes demonstrated an isolated transport boundary.",
+      "decision": "selected",
+      "source_url": "https://github.com/ruvnet/LatentMesh/tree/b04a70523196181aadc6d694e02de1f5722fae6b"
+    },
+    {
+      "repo": "ruvnet/ruflo",
+      "category": "ruvnet",
+      "revision": "3f2a40a2f06db9138f97ad8d582329189395e8ab",
+      "license": "MIT",
+      "capability": "Runtime mission orchestration with persisted workflow events and replay.",
+      "rationale": "Rejected: not among the seven v3 boundaries and present in recent history.",
+      "decision": "rejected",
+      "source_url": "https://github.com/ruvnet/ruflo/tree/3f2a40a2f06db9138f97ad8d582329189395e8ab"
+    },
+    {
+      "repo": "ruvnet/metaharness",
+      "category": "ruvnet",
+      "revision": "47c4c79d156352aec9a0fec1774b62c0b0deb758",
+      "license": "MIT",
+      "capability": "Frozen product-runtime evaluation and signed acceptance journals.",
+      "rationale": "Rejected: no v3 success/failure pair and present in recent history.",
+      "decision": "rejected",
+      "source_url": "https://github.com/ruvnet/metaharness/tree/47c4c79d156352aec9a0fec1774b62c0b0deb758"
+    },
+    {
+      "repo": "ruvnet/agentdb",
+      "category": "ruvnet",
+      "revision": "84081e21afa383f7f0849fed96c90b177ce27c8b",
+      "license": "MIT",
+      "capability": "Durable reflexion storage and retrieval for prior decisions.",
+      "rationale": "Rejected: returns to recent vector-memory shape; no v3 pair.",
+      "decision": "rejected",
+      "source_url": "https://github.com/ruvnet/agentdb/tree/84081e21afa383f7f0849fed96c90b177ce27c8b"
+    },
+    {
+      "repo": "ruvnet/RuForecast",
+      "category": "ruvnet",
+      "revision": "16c18aa5e9b2efbab9ae6b16fca8ea9e89def93f",
+      "license": "Apache-2.0 OR MIT",
+      "capability": "Local CPU admission-load and risk forecasting against naive baselines.",
+      "rationale": "Rejected: no reliable improvement over trivial baselines for this product.",
+      "decision": "rejected",
+      "source_url": "https://github.com/ruvnet/RuForecast/tree/16c18aa5e9b2efbab9ae6b16fca8ea9e89def93f"
+    },
+    {
+      "repo": "ruvnet/sublinear-time-solver",
+      "category": "ruvnet",
+      "revision": "b945e269ea1a910d0d7ce6e3eea4aa2ecf4aa191",
+      "license": "MIT",
+      "capability": "Sublinear optimization for bounded selection and allocation.",
+      "rationale": "Rejected as narrower than graph mechanism and present in latest-three history.",
+      "decision": "rejected",
+      "source_url": "https://github.com/ruvnet/sublinear-time-solver/tree/b945e269ea1a910d0d7ce6e3eea4aa2ecf4aa191"
+    },
+    {
+      "repo": "NVIDIA/SkillSpector",
+      "category": "enterprise",
+      "revision": "48e0f942ea1f5fdb7aa096a6f65a0adeda2ecc4e",
+      "license": "Apache-2.0",
+      "capability": "Static and policy-oriented inspection of agent skill bundles.",
+      "rationale": "Selected after benign and malicious fixture probes.",
+      "decision": "selected",
+      "source_url": "https://github.com/NVIDIA/SkillSpector/tree/48e0f942ea1f5fdb7aa096a6f65a0adeda2ecc4e"
+    },
+    {
+      "repo": "sigstore/cosign",
+      "category": "enterprise",
+      "revision": "252f10a80ba871152a12e5ee324ad1e02c85d079",
+      "license": "Apache-2.0",
+      "capability": "Offline signing and cryptographic verification of admitted artifacts.",
+      "rationale": "Selected to sign admitted output and reject tampering.",
+      "decision": "selected",
+      "source_url": "https://github.com/sigstore/cosign/tree/252f10a80ba871152a12e5ee324ad1e02c85d079"
+    },
+    {
+      "repo": "IBM/mcp-context-forge",
+      "category": "enterprise",
+      "revision": "b629439c6af9031ecdbfb879fe55d4b1ea78e7e3",
+      "license": "Apache-2.0",
+      "capability": "Gateway validation, policy, and routing for MCP tools.",
+      "rationale": "Rejected: no executed v3 success/failure pair.",
+      "decision": "rejected",
+      "source_url": "https://github.com/IBM/mcp-context-forge/tree/b629439c6af9031ecdbfb879fe55d4b1ea78e7e3"
+    },
+    {
+      "repo": "nats-io/nats-server",
+      "category": "enterprise",
+      "revision": "2a9066eb57ff4aa50d8e6a979bdfbd6a8b9db251",
+      "license": "Apache-2.0",
+      "capability": "Durable event fan-out and replay.",
+      "rationale": "Rejected: no v3 pair and present in recent history.",
+      "decision": "rejected",
+      "source_url": "https://github.com/nats-io/nats-server/tree/2a9066eb57ff4aa50d8e6a979bdfbd6a8b9db251"
+    },
+    {
+      "repo": "jaegertracing/jaeger",
+      "category": "enterprise",
+      "revision": "d723f91447f29a345c288f37eb8d1ce7807bc0be",
+      "license": "Apache-2.0",
+      "capability": "Distributed trace collection and correlation.",
+      "rationale": "Rejected: observability alone is not credited; no v3 pair.",
+      "decision": "rejected",
+      "source_url": "https://github.com/jaegertracing/jaeger/tree/d723f91447f29a345c288f37eb8d1ce7807bc0be"
+    }
+  ],
+  "dependencies": [
+    {
+      "repo": "ruvnet/autogenous",
+      "category": "ruvnet",
+      "revision": "3155111ae78039c3993a544044a9cac041090ea6",
+      "license": "MIT",
+      "responsibility": "Typed capability mutation, fitness gating, signed promotion, and rollback.",
+      "binding": "Pinned Rust acceptance lifecycle harness.",
+      "test_path": "probes/harness/scripts/autogenous-success.sh",
+      "probes": {
+        "success": {
+          "path": "selection-evidence-v3/autogenous-success/integrations-c25c2edc-4574-47b4-9009-e1a0d0de1d6a.receipt.json",
+          "sha256": "e23615354adb806b3359ce89fd0bc6b498f78c80e3936af73e5b29d08d77b094"
+        },
+        "failure": {
+          "path": "selection-evidence-v3/autogenous-failure/integrations-913af650-2e70-4176-be4a-fe65a9864b5d.receipt.json",
+          "sha256": "45f3959f9a9f3e502ea5ae4e01ed23ee33636ce39d86574fe63c1bbf1bd789e1"
+        }
+      }
+    },
+    {
+      "repo": "ruvnet/ruGraph",
+      "category": "ruvnet",
+      "revision": "d66d976c0ba8fa792fcf024c2a07b51480e4fbf1",
+      "license": "MIT",
+      "responsibility": "Evidence graph compilation, uncertainty-aware decisions, sensitivity audit, and replay.",
+      "binding": "Pinned executable graph success and evidence-expiry harness.",
+      "test_path": "probes/harness/scripts/rugraph-success.sh",
+      "probes": {
+        "success": {
+          "path": "selection-evidence-v3/rugraph-success/integrations-f1f54622-d728-43c9-bad6-70e0a4e0dddb.receipt.json",
+          "sha256": "e2ceb262954ebaf4f81f6477943ee4dcb1d154ea4814bcfb55b7438050f1963e"
+        },
+        "failure": {
+          "path": "selection-evidence-v3/rugraph-failure/integrations-59afc709-46e0-463f-b698-8b209e0193f0.receipt.json",
+          "sha256": "0d90c6bfef7fd2cdf22bc5cc468f20876484f361f7e742d004f1b6885c71c9d4"
+        }
+      }
+    },
+    {
+      "repo": "ruvnet/agenticow",
+      "category": "ruvnet",
+      "revision": "a6467863e250371562c2e0c83f5f993459607746",
+      "license": "MIT",
+      "responsibility": "Copy-on-write quarantine, promotion, rollback, and parent isolation.",
+      "binding": "Pinned sandbox promotion and poison-discard harness.",
+      "test_path": "probes/harness/scripts/agenticow-success.sh",
+      "probes": {
+        "success": {
+          "path": "selection-evidence-v3/agenticow-success/integrations-e17de401-e76a-45bd-8c85-b25ca23776bf.receipt.json",
+          "sha256": "21c240059ceb421860b799c0e46570466eaaf65871eb2636d6a945ecf5e6d663"
+        },
+        "failure": {
+          "path": "selection-evidence-v3/agenticow-failure/integrations-0c2c6f90-7b60-445b-9bd9-d1efed0a953a.receipt.json",
+          "sha256": "23017b4a4ed18448c792db771914889c24a240f614e486972ae1ac9eb73c1966"
+        }
+      }
+    },
+    {
+      "repo": "ruvnet/ai-text-watermark",
+      "category": "ruvnet",
+      "revision": "5871cf5fef6547c97626ba72d976f167562dab2a",
+      "license": "MIT",
+      "responsibility": "Keyed provenance generation and verification.",
+      "binding": "Pinned Rust correct-key and tamper harness.",
+      "test_path": "probes/harness/scripts/watermark-success.sh",
+      "probes": {
+        "success": {
+          "path": "selection-evidence-v3/watermark-success/integrations-e07a51a6-8d46-4a05-ae3b-bc94a210d84d.receipt.json",
+          "sha256": "c224a9f92eb0fb0cfdf6519b00b111ee506bc3c85ed0489802e38fdb0ad03d89"
+        },
+        "failure": {
+          "path": "selection-evidence-v3/watermark-failure/integrations-4afaab85-ae33-470d-931d-d069650d3b2a.receipt.json",
+          "sha256": "8e5fe1adaba68ef3ab3e0e3ac7a7f88a95bbb679e4cc4d2bfdeb90d2dc66f71b"
+        }
+      }
+    },
+    {
+      "repo": "ruvnet/LatentMesh",
+      "category": "ruvnet",
+      "revision": "b04a70523196181aadc6d694e02de1f5722fae6b",
+      "license": "Apache-2.0 OR MIT",
+      "responsibility": "Authenticated message encoding, reassembly, delivery, and replay rejection.",
+      "binding": "Pinned AgentBBS loopback and invalid-frame harness.",
+      "test_path": "probes/harness/scripts/latentmesh-success.sh",
+      "probes": {
+        "success": {
+          "path": "selection-evidence-v3/latentmesh-success/integrations-327320d3-8485-4a07-b64e-a95abae46b3b.receipt.json",
+          "sha256": "326c4e949808fc6b530debdbfe7a105c3b5cd553c9ae6b45faabac59da51b6f5"
+        },
+        "failure": {
+          "path": "selection-evidence-v3/latentmesh-failure/integrations-adc7867c-e0e5-40c9-9f48-83482ee81f58.receipt.json",
+          "sha256": "731ccb9ba627ebc52dff9e2b879dbd3fc357d51a7502509f99d24867e0628cf3"
+        }
+      }
+    },
+    {
+      "repo": "NVIDIA/SkillSpector",
+      "category": "enterprise",
+      "revision": "48e0f942ea1f5fdb7aa096a6f65a0adeda2ecc4e",
+      "license": "Apache-2.0",
+      "responsibility": "Capability inspection, severity classification, and recommendation.",
+      "binding": "Pinned benign and malicious skill fixture harness.",
+      "test_path": "probes/harness/scripts/skillspector-success.sh",
+      "probes": {
+        "success": {
+          "path": "selection-evidence-v3/skillspector-success/integrations-f0bf7ff3-0c20-4baf-809d-b8e21d510248.receipt.json",
+          "sha256": "37340841425d8b341e01ae28211709ad80ed21c072f0ad48ae471e117b97cc42"
+        },
+        "failure": {
+          "path": "selection-evidence-v3/skillspector-failure/integrations-1309caf5-2976-49d7-b4a5-1c418b17777c.receipt.json",
+          "sha256": "78242f3823a25656fbd8bce54a2896197135feea2ca5d7f1a0f10eb0ab2c99b4"
+        }
+      }
+    },
+    {
+      "repo": "sigstore/cosign",
+      "category": "enterprise",
+      "revision": "252f10a80ba871152a12e5ee324ad1e02c85d079",
+      "license": "Apache-2.0",
+      "responsibility": "Offline signing and verification with tamper rejection.",
+      "binding": "Pinned sign/verify and altered-blob harness.",
+      "test_path": "probes/harness/scripts/cosign-success.sh",
+      "probes": {
+        "success": {
+          "path": "selection-evidence-v3/cosign-success/integrations-ab152e22-b66e-4d03-972f-165db5202b50.receipt.json",
+          "sha256": "c72fcf4227b73487674ebf765e6a3a4cca680ed65274c5d11cdc032352c77e8b"
+        },
+        "failure": {
+          "path": "selection-evidence-v3/cosign-failure/integrations-61342e12-4e43-48cf-81dd-fa3f5b184d4d.receipt.json",
+          "sha256": "1fff8f314bb19f0bb13afaea10ced1628b27865238a4e6fae0bc74b8d5b8fe19"
+        }
+      }
+    }
+  ],
+  "history_status": "VERIFIED_ATTEMPTS",
+  "history": [
+    {
+      "attempt_id": "a5c01e07-e99c-8331-af7f-525856c2d5c3/clauseforge",
+      "attempted_at": "2026-11-24T05:28:28Z",
+      "source_sha": "6bdf78037f0b2dc8bb4da40916fb9eef6e5c6677",
+      "status": "BLOCKED_GIST_PUBLISH",
+      "evidence_url": "https://github.com/nicholas-ruest/clauseforge/commit/6bdf78037f0b2dc8bb4da40916fb9eef6e5c6677",
+      "selected_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/ruv-FANN",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/midstream",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/QuDAG",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/dspy.ts",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/guardrail",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "open-policy-agent/opa",
+          "category": "enterprise"
+        },
+        {
+          "repo": "facebookresearch/logact",
+          "category": "enterprise"
+        }
+      ],
+      "executed_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/ruv-FANN",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/midstream",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/QuDAG",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/dspy.ts",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/guardrail",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "open-policy-agent/opa",
+          "category": "enterprise"
+        },
+        {
+          "repo": "facebookresearch/logact",
+          "category": "enterprise"
+        }
+      ]
+    },
+    {
+      "attempt_id": "67d8c1f0-e27c-8325-ac02-98a369794cbf/scopewright",
+      "attempted_at": "2026-11-22T04:20:12.000Z",
+      "source_sha": "50e11570c53e5a01c3684bc9e5f0772b677575d8",
+      "status": "BLOCKED_GIST_PUBLISH",
+      "evidence_url": "https://github.com/nicholas-ruest/scopewright/commit/50e11570c53e5a01c3684bc9e5f0772b677575d8",
+      "selected_dependencies": [
+        {
+          "repo": "ruvnet/ruflo",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/metaharness",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/agentdb",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/site-harness",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/sublinear-time-solver",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "microsoft/TokenEconomizer",
+          "category": "enterprise"
+        },
+        {
+          "repo": "open-telemetry/opentelemetry-collector-contrib",
+          "category": "enterprise"
+        }
+      ],
+      "executed_dependencies": [
+        {
+          "repo": "ruvnet/ruflo",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/metaharness",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/agentdb",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/site-harness",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/sublinear-time-solver",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "microsoft/TokenEconomizer",
+          "category": "enterprise"
+        },
+        {
+          "repo": "open-telemetry/opentelemetry-collector-contrib",
+          "category": "enterprise"
+        }
+      ]
+    },
+    {
+      "attempt_id": "a06a4dc3-a1bc-8333-9fd5-8534a38a2d51/blastglass",
+      "attempted_at": "2026-11-21T02:51:55.742Z",
+      "source_sha": "7ffa58f24697b09df4b33df44991f3abc25d2b26",
+      "status": "BUILT",
+      "evidence_url": "https://github.com/nicholas-ruest/blastglass/commit/7ffa58f24697b09df4b33df44991f3abc25d2b26",
+      "selected_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/ruv-FANN",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/midstream",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/QuDAG",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/federated-mcp",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "open-policy-agent/opa",
+          "category": "enterprise"
+        },
+        {
+          "repo": "nats-io/nats-server",
+          "category": "enterprise"
+        }
+      ],
+      "executed_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/ruv-FANN",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/midstream",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/QuDAG",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/federated-mcp",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "open-policy-agent/opa",
+          "category": "enterprise"
+        },
+        {
+          "repo": "nats-io/nats-server",
+          "category": "enterprise"
+        }
+      ]
+    },
+    {
+      "attempt_id": "dm-20261107-canopy-relay",
+      "attempted_at": "2026-11-08T06:06:26Z",
+      "source_sha": "487f93465ac381cc7ae761abea5709008f5cf166",
+      "status": "BLOCKED_GIST_PUBLISH",
+      "evidence_url": "https://github.com/nicholas-ruest/canopy-relay/commit/487f93465ac381cc7ae761abea5709008f5cf166",
+      "selected_dependencies": [
+        {
+          "repo": "ruvnet/RuCelium",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/worldgraph",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/midstream",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/LatentMesh",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/ruv-FANN",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "cedar-policy/cedar",
+          "category": "enterprise"
+        },
+        {
+          "repo": "apache/opendal",
+          "category": "enterprise"
+        }
+      ],
+      "executed_dependencies": [
+        {
+          "repo": "ruvnet/RuCelium",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/worldgraph",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/midstream",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/LatentMesh",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/ruv-FANN",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "cedar-policy/cedar",
+          "category": "enterprise"
+        },
+        {
+          "repo": "apache/opendal",
+          "category": "enterprise"
+        }
+      ]
+    },
+    {
+      "attempt_id": "dream-machine-2026-11-06-resilience-loom",
+      "attempted_at": "2026-11-07T05:47:00Z",
+      "source_sha": "99b5d4892f0c3035c9301aa6b257b0e9b4b5e8b4",
+      "status": "BLOCKED_GIST_PUBLISH",
+      "evidence_url": "https://github.com/nicholas-ruest/resilience-loom/commit/99b5d4892f0c3035c9301aa6b257b0e9b4b5e8b4",
+      "selected_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/agentdb",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/dspy.ts",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/ruflo",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/sublinear-time-solver",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "microsoft/regorus",
+          "category": "enterprise"
+        },
+        {
+          "repo": "open-telemetry/opentelemetry-rust",
+          "category": "enterprise"
+        }
+      ],
+      "executed_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/agentdb",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/dspy.ts",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/ruflo",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/sublinear-time-solver",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "microsoft/regorus",
+          "category": "enterprise"
+        },
+        {
+          "repo": "open-telemetry/opentelemetry-rust",
+          "category": "enterprise"
+        }
+      ]
+    },
+    {
+      "attempt_id": "historical/patch-cage@e39750b924f10b57ae84b4758c6abdc3495650c5",
+      "attempted_at": "2026-10-30T02:05:47Z",
+      "source_sha": "e39750b924f10b57ae84b4758c6abdc3495650c5",
+      "status": "NONCOMPLIANT_BUILD",
+      "evidence_url": "https://github.com/nicholas-ruest/patch-cage/commit/e39750b924f10b57ae84b4758c6abdc3495650c5",
+      "selected_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/ruflo",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/metaharness",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/rune",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "ruvnet/SynthLang",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "open-feature/rust-sdk",
+          "category": "enterprise"
+        },
+        {
+          "repo": "open-telemetry/opentelemetry-rust",
+          "category": "enterprise"
+        }
+      ],
+      "executed_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "open-feature/rust-sdk",
+          "category": "enterprise"
+        },
+        {
+          "repo": "open-telemetry/opentelemetry-rust",
+          "category": "enterprise"
+        }
+      ]
+    },
+    {
+      "attempt_id": "historical/context-bastion@6e546aeb71a1e2e5976e1c23a733bcc9e1a82da9",
+      "attempted_at": "2026-10-29T02:21:24Z",
+      "source_sha": "6e546aeb71a1e2e5976e1c23a733bcc9e1a82da9",
+      "status": "BUILT",
+      "evidence_url": "https://github.com/nicholas-ruest/context-bastion/commit/6e546aeb71a1e2e5976e1c23a733bcc9e1a82da9",
+      "selected_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "microsoft/regorus",
+          "category": "enterprise"
+        }
+      ],
+      "executed_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "microsoft/regorus",
+          "category": "enterprise"
+        }
+      ]
+    },
+    {
+      "attempt_id": "historical/supply-weave@652f936fa31fcbca2a2f353f529d5f8de1966130",
+      "attempted_at": "2026-10-28T03:32:50Z",
+      "source_sha": "652f936fa31fcbca2a2f353f529d5f8de1966130",
+      "status": "BUILT",
+      "evidence_url": "https://github.com/nicholas-ruest/supply-weave/commit/652f936fa31fcbca2a2f353f529d5f8de1966130",
+      "selected_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "apache/datafusion",
+          "category": "enterprise"
+        }
+      ],
+      "executed_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "apache/datafusion",
+          "category": "enterprise"
+        }
+      ]
+    },
+    {
+      "attempt_id": "historical/contract-current@3bd6886139436a9d19379933b6008517b12d15a5",
+      "attempted_at": "2026-10-27T02:11:24Z",
+      "source_sha": "3bd6886139436a9d19379933b6008517b12d15a5",
+      "status": "BUILT",
+      "evidence_url": "https://github.com/nicholas-ruest/contract-current/commit/3bd6886139436a9d19379933b6008517b12d15a5",
+      "selected_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "cedar-policy/cedar",
+          "category": "enterprise"
+        }
+      ],
+      "executed_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "cedar-policy/cedar",
+          "category": "enterprise"
+        }
+      ]
+    },
+    {
+      "attempt_id": "historical/mandate-mesh@fa6e7ce708528d2a2a1d466d5524e99da2930323",
+      "attempted_at": "2026-10-26T02:25:07Z",
+      "source_sha": "fa6e7ce708528d2a2a1d466d5524e99da2930323",
+      "status": "BUILT",
+      "evidence_url": "https://github.com/nicholas-ruest/mandate-mesh/commit/fa6e7ce708528d2a2a1d466d5524e99da2930323",
+      "selected_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "microsoft/regorus",
+          "category": "enterprise"
+        }
+      ],
+      "executed_dependencies": [
+        {
+          "repo": "ruvnet/RuVector",
+          "category": "ruvnet"
+        },
+        {
+          "repo": "microsoft/regorus",
+          "category": "enterprise"
+        }
+      ]
+    }
+  ]
+}

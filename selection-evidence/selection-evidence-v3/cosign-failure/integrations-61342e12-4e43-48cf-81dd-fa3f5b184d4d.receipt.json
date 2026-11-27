@@ -1,0 +1,18 @@
+{
+  "schema_version": 2,
+  "suite": "integrations",
+  "source_sha": "4106f742712cb8886d82d586892c9663071d4527",
+  "argv": [
+    "bash",
+    "scripts/cosign-failure.sh",
+    "/home/ruv/.local/state/dream-machine/runs/e4167056-ce98-832f-b1c9-92740e1d9d99"
+  ],
+  "started_at": "2026-11-27T03:12:49.714Z",
+  "ended_at": "2026-11-27T03:12:49.875Z",
+  "exit_code": 0,
+  "signal": null,
+  "error": null,
+  "integrity_error": null,
+  "log": "integrations-61342e12-4e43-48cf-81dd-fa3f5b184d4d.log",
+  "log_sha256": "71abe8d21e44d7b928312b635efc6e5e5dbf69e61ef0bae7badbd149ee277139"
+}

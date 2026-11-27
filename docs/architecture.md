@@ -1,41 +1,17 @@
-# Architecture
+# Capability Provenance Mesh architecture
 
-## Architectural style
+Capability Provenance Mesh decides whether an executable capability pack may become active. The product preserves the causal chain from submitted bytes through declarations, seven upstream observations, trial state, admission, persistence, and rendered operator feedback.
 
-Capability Provenance Mesh uses a Rust modular monolith with a service-owned background trial worker. Bounded contexts expose typed APIs through application services. Upstream projects sit behind anti-corruption adapters that translate real results and failures into domain types. A generated TypeScript client connects a React admission workbench to a versioned Axum API.
+## Runtime path
 
-## Primary flow
+The React operator console in [frontend/src/ProductApp.tsx](../frontend/src/ProductApp.tsx) calls the generated client whose contract originates in [api/openapi.yaml](../api/openapi.yaml). The Axum composition root in [crates/cpm-service/src/lib.rs](../crates/cpm-service/src/lib.rs) enforces authentication, role authorization, policy, validation, timeout, correlation, tracing, and error envelopes before dispatching to [crates/cpm-application/src/lib.rs](../crates/cpm-application/src/lib.rs).
 
-1. React streams a bundle and manifest through the generated client.
-2. Ordered middleware establishes correlation, observability, errors, timeout, identity, validation, authorization, and Cedar policy.
-3. Artifact Intake hashes and quarantines bytes.
-4. Lineage verifies Rune build-plan and artifact receipts.
-5. RVM inspects package identity and maps declared capability classes.
-6. Wasmtime executes the frozen scenario pack with explicit host functions, fuel, memory, and epoch limits.
-7. Observations travel through a signed LatentMesh envelope and are normalized.
-8. WorldGraph projects package, dependency, capability, effect, and evidence relationships.
-9. APx scores accepted useful task work against the frozen reference pack.
-10. Admission computes risk, invokes Cedar, records the human decision, and persists immutable artifacts/events through OpenDAL.
-11. The API returns a graph, trial result, decision, and receipt for frontend rendering.
+Application orchestration performs intake, manifest parsing, capability evaluation, lineage, scenario/trial construction, seven typed upstream integrations, observation normalization, effect-graph completeness, risk, and admission. It appends decisions and audit data through [crates/cpm-store/src/lib.rs](../crates/cpm-store/src/lib.rs), then writes active state through [crates/cpm-registry/src/lib.rs](../crates/cpm-registry/src/lib.rs) only for accepted outcomes.
 
-## Trust boundaries
+## Integration boundary
 
-- Browser is untrusted and never receives service credentials.
-- Uploaded bundle remains quarantined until identity, limits, and policy are established.
-- Wasmtime exposes only named product host functions; no ambient WASI authority.
-- RVM performs inspection/capability mapping and witnessed refusal; it is not misrepresented as the WASM execution engine.
-- LatentMesh envelopes are verified before observations influence decisions.
-- OpenDAL current pointers update only after immutable blob and event durability.
-- Policy denial precedes registry activation or a current-pointer write.
+Process mechanics live in [crates/cpm-upstream-runtime/src/lib.rs](../crates/cpm-upstream-runtime/src/lib.rs). Project semantics live in distinct modules under [crates/cpm-upstreams/src](../crates/cpm-upstreams/src). This keeps one meaningful integration crate without erasing the seven different requests, validations, and failure modes.
 
-## State model
+## No-effect guarantee
 
-The service stores immutable blobs, append-only aggregate events, rebuildable snapshots, and conditional current pointers. On startup it verifies event/receipt hashes and reconstructs registry state. In-memory caches are disposable.
-
-## Frontend shape
-
-The frontend is an admission workbench, not a generic dashboard: intake editor, capability graph, deterministic trial console, denial/remediation diff, admitted-version registry, and audit replay. Every primary control uses real backend data with loading, empty, validation, success, error, denied, cancelled, and stale-revision states.
-
-## Deployment topology
-
-See [topology](topology.md). Local/CI runs use rootless containers and localhost-compatible networking. Cloud Run files are configuration only; no deployment is authorized.
+Denied and incomplete decisions are durable and queryable but never active. Browser restart retrieval reads stored projections; it does not rerun integrations. [ADR-012](adr/012.md), [ADR-019](adr/019.md), and [DDD-011](ddd/011.md) define the reciprocal boundaries.

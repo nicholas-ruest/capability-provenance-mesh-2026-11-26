@@ -1,16 +1,43 @@
 [workspace]
 resolver = "2"
-members = ["crates/cpm-contracts"]
-
+members = ["crates/*"]
 [workspace.package]
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 rust-version = "1.100"
-
+[workspace.dependencies]
+cpm-contracts = { path = "crates/cpm-contracts" }
+cpm-upstream-runtime = { path = "crates/cpm-upstream-runtime" }
+serde = { version = "1.0.228", features = ["derive"] }
+sha2 = "0.10.9"
+thiserror = "2.0.17"
+uuid = { version = "1.18.1", features = ["v4", "serde"] }
+serde_json = "1.0.145"
+axum = { version = "0.8.7", features = ["json", "macros"] }
+tokio = { version = "1.48.0", features = ["macros", "rt-multi-thread", "signal"] }
+tower = { version = "0.5.2", features = ["timeout", "util"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
+cpm-artifact-intake = { path = "crates/cpm-artifact-intake" }
+cpm-manifest = { path = "crates/cpm-manifest" }
+cpm-capability-model = { path = "crates/cpm-capability-model" }
+cpm-lineage = { path = "crates/cpm-lineage" }
+cpm-observation = { path = "crates/cpm-observation" }
+cpm-effect-graph = { path = "crates/cpm-effect-graph" }
+cpm-risk = { path = "crates/cpm-risk" }
+cpm-scenarios = { path = "crates/cpm-scenarios" }
+cpm-resource-budget = { path = "crates/cpm-resource-budget" }
+cpm-trial-state = { path = "crates/cpm-trial-state" }
+cpm-admission = { path = "crates/cpm-admission" }
+cpm-remediation = { path = "crates/cpm-remediation" }
+cpm-receipts = { path = "crates/cpm-receipts" }
+cpm-registry = { path = "crates/cpm-registry" }
+cpm-upstreams = { path = "crates/cpm-upstreams" }
+cpm-store = { path = "crates/cpm-store" }
+cpm-application = { path = "crates/cpm-application" }
 [workspace.lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"
-
 [workspace.lints.clippy]
 all = "deny"
 pedantic = "warn"

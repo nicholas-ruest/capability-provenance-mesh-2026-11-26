@@ -1,0 +1,18 @@
+{
+  "schema_version": 2,
+  "suite": "integrations",
+  "source_sha": "4106f742712cb8886d82d586892c9663071d4527",
+  "argv": [
+    "bash",
+    "scripts/skillspector-failure.sh",
+    "/home/ruv/.local/state/dream-machine/runs/e4167056-ce98-832f-b1c9-92740e1d9d99"
+  ],
+  "started_at": "2026-11-27T03:12:43.375Z",
+  "ended_at": "2026-11-27T03:12:48.369Z",
+  "exit_code": 0,
+  "signal": null,
+  "error": null,
+  "integrity_error": null,
+  "log": "integrations-1309caf5-2976-49d7-b4a5-1c418b17777c.log",
+  "log_sha256": "367a491e6e7cbb3481365faffaaeb025e4777efbeb5cc4efb3d7854690149960"
+}

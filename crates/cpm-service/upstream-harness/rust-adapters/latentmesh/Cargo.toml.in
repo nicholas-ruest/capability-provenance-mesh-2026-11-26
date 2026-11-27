@@ -1,0 +1,7 @@
+[package]
+name="cpm-latentmesh-candidate"
+version="0.1.0"
+edition="2021"
+[workspace]
+[dependencies]
+latentmesh-meshtastic={path="@UPSTREAM@/crates/latentmesh-meshtastic"}

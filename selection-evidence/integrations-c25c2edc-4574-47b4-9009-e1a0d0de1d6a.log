@@ -1,0 +1,155 @@
+{
+    "constitution": {
+        "authority_ceiling": "governed",
+        "effective_at": 1700000000,
+        "hard_gates": {
+            "max_false_positive_rate": 0.005,
+            "max_p99_overhead_ms": 5.0,
+            "min_governance": 0.99,
+            "min_safety": 0.99
+        },
+        "identity": "closed",
+        "pinned_keys": {
+            "controllers": [
+                "ed4928c628d1c2c6eae90338905995612959273a5c63f93636c14614ac8737d1"
+            ],
+            "judges": [
+                "8a88e3dd7409f195fd52db2d3cba5d72ca6709bf1d94121bf3748801b40f6f5c",
+                "8139770ea87d175f56a35466c34c7ecccb8d8a91b4ee37a25df60f5b8fc9b394"
+            ]
+        },
+        "prohibited_effects": [
+            "pii_egress",
+            "config_write"
+        ],
+        "signers": [
+            "a",
+            "b"
+        ],
+        "version": 1
+    },
+    "controller": {
+        "audit": [
+            "start canary at 1%",
+            "advance 1% -> 10%",
+            "advance 10% -> 50%",
+            "advance 50% -> 100%"
+        ],
+        "candidate_id": "707359c0da2dd19a3e14414be63d04892d46ed7fc72493efa80c5de371fd22ec",
+        "consumed_nonces": [],
+        "gates": {
+            "max_false_positive_rate": 0.005,
+            "max_p99_overhead_ms": 5.0,
+            "min_governance": 0.99,
+            "min_safety": 0.99
+        },
+        "observations_per_stage": 1,
+        "rollback_target": "genome-parent",
+        "state": {
+            "Serving": {
+                "healthy_observations": 1,
+                "stage_idx": 3
+            }
+        }
+    },
+    "envelope": {
+        "candidate_hash": "707359c0da2dd19a3e14414be63d04892d46ed7fc72493efa80c5de371fd22ec",
+        "constitution_hash": "942311c09dc9b75152ad2422d7d12de1ba0bb7aa3846cbd9f26dacb571e11677",
+        "controller_pubkey": "ed4928c628d1c2c6eae90338905995612959273a5c63f93636c14614ac8737d1",
+        "expires_at": 1800000600,
+        "nonce": "nonce-e2e",
+        "receipt_hashes": [
+            "fddbe4bc95d4f62ea2ed71f927b5da96f097283eafa970d2b04179694e4f8d23",
+            "3671ae37452c7df58798ea99224ebfbdf96c712f6e7d27e22ec9efe321add68f"
+        ],
+        "signature": "7cef84c7258707b36874954782a43d95cc85e1aca4a59adc1bcbba62890127bdda23582a641b6a03e71f02168e39c6d22be4b8186f4034dfa1258d22adef7804",
+        "signer_role": "controller",
+        "timestamp": 1800000000
+    },
+    "manifest": {
+        "declared_effects": [],
+        "detector_hash": "b0652116b0a50424797795a6152832e0b765c96f032c600a05944c12e12a0182",
+        "invariant_proofs": [
+            {
+                "invariant": "tenant_isolation",
+                "kind": "capability_analysis",
+                "reference": "d50f5be5bca779905f94c4d206b70af7895094b695b731af6d966405579bd85e"
+            }
+        ],
+        "mutation": {
+            "applicability": {
+                "environments": [],
+                "jurisdictions": [],
+                "workloads": []
+            },
+            "expires_at": 1800003600,
+            "id": "mut-1",
+            "parent_genome_hash": "genome-parent",
+            "preserved_invariants": [],
+            "requested_authority": "auto_reversible",
+            "rollback_target": "genome-parent",
+            "scope": "retrieval_rerank",
+            "signature": null
+        },
+        "requested_capabilities": []
+    },
+    "now": 1800000001,
+    "parent": {
+        "capability_ceiling": "governed",
+        "constitution": "942311c09dc9b75152ad2422d7d12de1ba0bb7aa3846cbd9f26dacb571e11677",
+        "hard_invariants": [
+            {
+                "holds": true,
+                "name": "tenant_isolation"
+            }
+        ],
+        "hash": "genome-parent",
+        "identity": "firewall",
+        "lineage": []
+    },
+    "proof_artifacts": [
+        {
+            "examined_authority": "auto_reversible",
+            "examined_scope": "retrieval_rerank",
+            "invariant": "tenant_isolation",
+            "kind": "capability_analysis",
+            "parent_ceiling": "governed"
+        }
+    ],
+    "receipts": [
+        {
+            "candidate_fp": 0.0,
+            "candidate_fp_hi": 0.002554430721377325,
+            "candidate_hash": "707359c0da2dd19a3e14414be63d04892d46ed7fc72493efa80c5de371fd22ec",
+            "candidate_recall": 1.0,
+            "candidate_recall_lo": 0.9974455692786228,
+            "corpus_id": "corpus-v1",
+            "evaluator_version": "eval-1",
+            "judge_pubkey": "8a88e3dd7409f195fd52db2d3cba5d72ca6709bf1d94121bf3748801b40f6f5c",
+            "p99_overhead_ms": 1.5,
+            "parent_fp": 0.0,
+            "parent_hash": "b8839ae3b7c2a8a65d4e3d868c6893e5ca9ee40aed1a72fb922cc92c6c9d2348",
+            "parent_recall": 0.0,
+            "sample_count": 3000,
+            "signature": "03dd3daad779b3176aa1dc61a93d8b7bf878270f71bd16f7a5986f9d3a376a56b6f9d369d6bf08ac9a2562846b5cab4ace925938987e0a0a81228aba4febac0d",
+            "timestamp": 1800000000
+        },
+        {
+            "candidate_fp": 0.0,
+            "candidate_fp_hi": 0.002554430721377325,
+            "candidate_hash": "707359c0da2dd19a3e14414be63d04892d46ed7fc72493efa80c5de371fd22ec",
+            "candidate_recall": 1.0,
+            "candidate_recall_lo": 0.9974455692786228,
+            "corpus_id": "corpus-v1",
+            "evaluator_version": "eval-1",
+            "judge_pubkey": "8139770ea87d175f56a35466c34c7ecccb8d8a91b4ee37a25df60f5b8fc9b394",
+            "p99_overhead_ms": 1.6,
+            "parent_fp": 0.0,
+            "parent_hash": "b8839ae3b7c2a8a65d4e3d868c6893e5ca9ee40aed1a72fb922cc92c6c9d2348",
+            "parent_recall": 0.0,
+            "sample_count": 3000,
+            "signature": "5170d41ff1a5a99836ee4621d15290bd1871a9a16d6d5384fa6a60eec5778a13e6971c1cab75b0a455111963f6b8cc146ad8e330c59ca41155837c369519c004",
+            "timestamp": 1800000000
+        }
+    ]
+}

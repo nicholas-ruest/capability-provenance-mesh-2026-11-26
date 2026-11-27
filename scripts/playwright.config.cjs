@@ -1,0 +1,2 @@
+const {defineConfig}=require(process.env.DREAM_MACHINE_PLAYWRIGHT_ROOT+"/node_modules/@playwright/test");
+module.exports=defineConfig({testDir:__dirname,fullyParallel:false,workers:1,retries:0,timeout:120000,outputDir:process.env.DREAM_MACHINE_EVIDENCE_DIR+"/playwright-output",reporter:[["json",{outputFile:process.env.DREAM_MACHINE_EVIDENCE_DIR+"/playwright-report.json"}]],use:{baseURL:"http://127.0.0.1:4173",trace:"on",screenshot:"off",video:"off",headless:true}});

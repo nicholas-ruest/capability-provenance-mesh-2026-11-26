@@ -1,0 +1,59 @@
+name: capability-provenance-mesh
+services:
+  api:
+    image: localhost/capability-provenance-mesh-api:local
+    build:
+      context: .
+      dockerfile: containers/api.Containerfile
+      network: host
+    network_mode: host
+    environment:
+      CPM_API_HOST: 127.0.0.1
+      CPM_API_PORT: "${CPM_CONTAINER_API_PORT:-18081}"
+      CPM_DATA_DIR: /var/lib/cpm
+      CPM_TEMP_DIR: /tmp/cpm
+      CPM_UPSTREAM_HARNESS_ROOT: /opt/cpm/harness
+      CPM_UPSTREAM_SOURCE_ROOT: ${DREAM_MACHINE_UPSTREAM_ROOT:?external pinned upstream root required}
+      CPM_SKILLSPECTOR_BIN: ${DREAM_MACHINE_UPSTREAM_ROOT:?}/.venv-skillspector/bin/skillspector
+      CONTAINER_HOST: unix:///run/podman/podman.sock
+      RUST_LOG: ${RUST_LOG:-info}
+    read_only: true
+    user: "0:0"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=128m"]
+    volumes:
+      - cpm-data:/var/lib/cpm:rw
+      - ${DREAM_MACHINE_UPSTREAM_ROOT:?}:${DREAM_MACHINE_UPSTREAM_ROOT:?}:ro
+      - ${XDG_RUNTIME_DIR:?}/podman/podman.sock:/run/podman/podman.sock
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/readiness", "http://127.0.0.1:${CPM_CONTAINER_API_PORT:-18081}/readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+  frontend:
+    image: localhost/capability-provenance-mesh-frontend:local
+    build:
+      context: .
+      dockerfile: containers/frontend.Containerfile
+      network: host
+      args:
+        VITE_API_URL: /api
+    network_mode: host
+    environment:
+      NGINX_PORT: "${CPM_CONTAINER_FRONTEND_PORT:-4174}"
+      CPM_API_UPSTREAM: "127.0.0.1:${CPM_CONTAINER_API_PORT:-18081}"
+    read_only: true
+    user: "101:101"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=32m"]
+    depends_on:
+      api: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:${CPM_CONTAINER_FRONTEND_PORT:-4174}/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+volumes:
+  cpm-data: {}

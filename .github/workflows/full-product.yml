@@ -1,0 +1,77 @@
+name: full-product-gate
+on: [pull_request]
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+concurrency:
+  group: full-product-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /tmp/dream-machine-ms-playwright
+      DREAM_MACHINE_PLAYWRIGHT_ROOT: /tmp/dream-machine-playwright
+      DREAM_MACHINE_UPSTREAM_ROOT: /tmp/dream-machine-upstreams
+      DREAM_MACHINE_PRODUCER_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+      DREAM_MACHINE_SELECTION_REPORT: ${{ github.workspace }}/selection-evidence/selection-report.json
+      DREAM_MACHINE_SELECTION_EVIDENCE: ${{ github.workspace }}/selection-evidence
+      DREAM_MACHINE_EVIDENCE_DIR: /tmp/dream-machine-evidence
+      DREAM_MACHINE_SEMANTIC_REVIEW: /tmp/dream-machine-semantic-review.md
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, ref: "${{ github.event.pull_request.head.sha || github.sha }}"}
+      - name: Resolve source-bound independent semantic review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REVIEW_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          source_sha="$(git rev-parse HEAD)"
+          comments=/tmp/dream-machine-review-comments.json
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/issues/$REVIEW_PR_NUMBER/comments?per_page=100" > "$comments"
+          review_filter='[.[][] | select(.user.login == "nicholas-ruest" and .author_association == "OWNER") | select(.body | contains("<!-- DREAM_MACHINE_INDEPENDENT_SEMANTIC_REVIEW -->")) | select(([.body | split("\n")[] | select(startswith("Source-SHA: "))] | length) == 1) | select(.body | split("\n") | index("Source-SHA: " + $sha)) | select(([.body | split("\n")[] | select(startswith("Verdict: "))] | length) == 1) | select(.body | split("\n") | index("Verdict: PASS"))]'
+          count="$(jq -r --arg sha "$source_sha" "$review_filter | length" "$comments")"
+          test "$count" = 1
+          jq -r --arg sha "$source_sha" "$review_filter | .[0].body" "$comments" > "$DREAM_MACHINE_SEMANTIC_REVIEW"
+          grep -F '<!-- DREAM_MACHINE_INDEPENDENT_SEMANTIC_REVIEW -->' "$DREAM_MACHINE_SEMANTIC_REVIEW"
+          grep -Fx "Source-SHA: $source_sha" "$DREAM_MACHINE_SEMANTIC_REVIEW"
+          grep -Fx 'Verdict: PASS' "$DREAM_MACHINE_SEMANTIC_REVIEW"
+      - uses: dtolnay/rust-toolchain@stable
+        with: {toolchain: "1.100.0", components: rustfmt,clippy}
+      - uses: actions/setup-node@v4
+        with: {node-version: "24.21.0", cache: npm, cache-dependency-path: frontend/package-lock.json}
+      - uses: taiki-e/install-action@v2
+        with: {tool: cargo-deny}
+      - run: sudo apt-get update && sudo apt-get install -y podman podman-compose python3-venv
+      - name: Install locked browser runner outside checkout
+        run: |
+          npm install --prefix "$DREAM_MACHINE_PLAYWRIGHT_ROOT" --no-save @playwright/test@1.56.1
+          "$DREAM_MACHINE_PLAYWRIGHT_ROOT/node_modules/.bin/playwright" install --with-deps chromium
+      - run: node scripts/dream-machine-gate-bundle.mjs .
+      - name: Verify governed publisher without network
+        run: |
+          tests/publication/publisher-route.test.sh
+          tests/publication/negative-control.sh
+      - name: Separate Rust source floor
+        run: node scripts/dream-machine-rust-share.mjs .
+      - name: Independent semantic review required
+        run: source_sha="$(git rev-parse HEAD)"; test -s "$DREAM_MACHINE_SEMANTIC_REVIEW" && grep -F "$source_sha" "$DREAM_MACHINE_SEMANTIC_REVIEW"
+      - name: Produce source-bound evidence
+        run: scripts/verify-prototype.sh
+      - name: Exact-head publication controller check
+        run: |
+          controller_evidence=/tmp/dream-machine-controller-evidence
+          test ! -e "$controller_evidence"
+          DREAM_MACHINE_EVIDENCE_DIR="$controller_evidence" node scripts/dream-machine-publication-gate.mjs --check . "$controller_evidence"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: capability-provenance-evidence-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            /tmp/dream-machine-evidence
+            /tmp/dream-machine-controller-evidence
+          if-no-files-found: error
+          retention-days: 30

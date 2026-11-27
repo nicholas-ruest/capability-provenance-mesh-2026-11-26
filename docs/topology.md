@@ -1,23 +1,7 @@
-# Topology
+# Deployment topology
 
-## Local and CI topology
+[compose.yml](../compose.yml) starts the Rust API and web frontend as rootless containers with a shared durable data boundary. [containers/api.Containerfile](../containers/api.Containerfile) builds the service; [containers/frontend.Containerfile](../containers/frontend.Containerfile) and [containers/nginx.conf](../containers/nginx.conf) serve the React build.
 
-| Process | Responsibility | Planned port/boundary |
-| --- | --- | --- |
-| React/Vite frontend | Admission workbench and generated client | `127.0.0.1:4173` |
-| Rust Axum service | API, middleware, application composition, SSE | `127.0.0.1:8080` |
-| Rust trial worker | Service-owned bounded Wasmtime execution | internal task queue |
-| APx adapter process | Pinned executable scoring boundary if no native API is available | child process, no network |
-| OpenDAL FS service | Local/CI shared-object emulation | mounted authorized data directory |
+The authorized host cannot rely on privileged containers or default slirp access to a tunnel device, so [scripts/container-readiness.sh](../scripts/container-readiness.sh) verifies the compatible host-network topology and localhost readiness. Health is process liveness; readiness includes storage and application usability.
 
-## Container rules
-
-- Rootless images and explicit unprivileged users.
-- Read-only application filesystem except declared data/temp mounts.
-- No privileged mode, host devices, ambient credentials, or unrestricted plugin network.
-- Deterministic health/readiness checks.
-- Full stack start/stop/reset/seed scripts will be implemented with the running slice.
-
-## Cloud Run compatibility
-
-The API and frontend remain stateless relative to the authorized shared-object boundary. Trial jobs use bounded request/job semantics and cancellation. Deployment and rollback files will be supplied later as configuration only; no cloud action is authorized.
+[deploy/cloud-run-service.yaml](../deploy/cloud-run-service.yaml) and [deploy/rollback.env.example](../deploy/rollback.env.example) are configuration only. No deployment or spending is authorized. Restart evidence retains the mounted data boundary, restarts the API, and retrieves the same decision in the browser.

@@ -1,0 +1,16 @@
+production base: 500 vectors
+
+── agent "alice" ──
+  audit[spawn] node=agent/alice id=754c3648… parent=f4e2c264… mutations=0 created=03:12:34.242
+  audit[sandbox-ingest] node=sandbox/alice id=f739efde… parent=754c3648… mutations=2 created=03:12:34.243
+  review gate: PASS
+  → promoted: 2 vectors merged into base (was 500, now 502)
+
+── agent "mallory" ──
+  audit[spawn] node=agent/mallory id=98f06a4a… parent=f4e2c264… mutations=0 created=03:12:34.246
+  audit[sandbox-ingest] node=sandbox/mallory id=a1965539… parent=98f06a4a… mutations=2 created=03:12:34.247
+  review gate: REJECT (near a flagged/banned memory)
+  → discarded sandbox; base unchanged (502 vectors)
+
+flagged memory present in base = false (top hit id 372, dist 1.223)
+base final size: 502 vectors

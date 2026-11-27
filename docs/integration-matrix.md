@@ -1,21 +1,15 @@
-# Planned integration matrix
+# Executed integration matrix
 
-Exact revisions, licenses, bindings, and source URLs must be resolved and probed before selection. This plan is not a selection receipt.
+All projects execute through one production integration crate while retaining project-specific types and failure semantics.
 
-| Canonical upstream | Category | Product responsibility | Intended binding | Success operation | Failure assertion |
-| --- | --- | --- | --- | --- | --- |
-| `ruvnet/rvm` | Ruvnet | Package identity, capability mapping, witnessed refusal | direct pinned Rust crates | verify fixture and map classes | altered header/unsupported class refuses before allocation |
-| `ruvnet/rune` | Ruvnet | Frozen build-plan and artifact-lineage verification | pinned executable or direct crate API | replay plan and match digest | source/lock drift causes stale-plan refusal |
-| `ruvnet/LatentMesh` | Ruvnet | Signed, fragmented, replay-defended trial observations | direct pinned Rust crate | encode/round-trip/reassemble envelope | corrupt/replayed fragment rejected |
-| `ruvnet/worldgraph` | Ruvnet | Typed capability/dependency/effect provenance graph | direct pinned Rust crate | add/query typed reachability graph | invalid/untrusted relation cannot authorize |
-| `ruvnet/APx` | Ruvnet | Task usefulness/eligibility against frozen reference pack | pinned executed local service/process | reproduce accepted score | incomplete/unsafe/unmetered evidence ineligible |
-| `bytecodealliance/wasmtime` | Enterprise | Actual bounded WASM execution | direct pinned Rust crates | permitted host-call fixture | undeclared call or fuel limit traps with no effect |
-| `cedar-policy/cedar` | Enterprise | Tenant/action/resource/context policy | direct pinned Rust crates | parse/evaluate compliant request | denied principal/context prevents activation |
-| `apache/opendal` | Enterprise | Durable object/event/snapshot boundary | direct pinned Rust crate | write/read/restart reconstruction | conflict/missing object leaves no partial pointer |
+| Project | Typed module | Product responsibility | Intended result | Failure assertion |
+|---|---|---|---|---|
+| Autogenous | [autogenous.rs](../crates/cpm-upstreams/src/autogenous.rs) | scoped remediation proposal | validated change plan tied to parent | empty/invalid plan rejected |
+| RuGraph | [rugraph.rs](../crates/cpm-upstreams/src/rugraph.rs) | causal graph query/replay | graph evidence for candidate | invalid query/result rejected |
+| Agenticow | [agenticow.rs](../crates/cpm-upstreams/src/agenticow.rs) | isolated agent-tool contract | bounded child contract | escaping/invalid contract rejected |
+| AI Text Watermark | [watermark.rs](../crates/cpm-upstreams/src/watermark.rs) | generated text provenance | typed watermark probe | absent/corrupt probe reported, never identity |
+| LatentMesh | [latentmesh.rs](../crates/cpm-upstreams/src/latentmesh.rs) | bounded signed envelope | scoped fresh mesh envelope | invalid envelope rejected |
+| SkillSpector | [skillspector.rs](../crates/cpm-upstreams/src/skillspector.rs) | malicious skill inspection | normalized inspection | invalid/missing inspection becomes failure |
+| Cosign | [cosign.rs](../crates/cpm-upstreams/src/cosign.rs) | offline signature verification | typed verification | tampered bundle rejected |
 
-## Counting notes
-
-- RVM inspection is not represented as WASM execution; Wasmtime owns execution.
-- Required coordination tools do not count unless they perform a demonstrated runtime product responsibility.
-- Packages, subcrates, aliases, or forks from one canonical upstream count once.
-- If any responsibility cannot be executed through the pinned source, replace the ingredient and redo probes/selection.
+Shared process evidence comes from [crates/cpm-upstream-runtime/src/lib.rs](../crates/cpm-upstream-runtime/src/lib.rs). The exact pins and success/failure harnesses are under [crates/cpm-service/upstream-harness](../crates/cpm-service/upstream-harness). [crates/cpm-upstreams/src/lib.rs](../crates/cpm-upstreams/src/lib.rs) runs the full suite from production service composition.

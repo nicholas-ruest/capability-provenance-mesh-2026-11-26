@@ -1,47 +1,7 @@
-# Versioned API and middleware plan
+# API and middleware contract
 
-## API v1
+[api/openapi.yaml](../api/openapi.yaml) is the sole API contract. [api/client/generate-client.mjs](../api/client/generate-client.mjs) generates [api/client/schema.ts](../api/client/schema.ts); the official checker performs structural comparison. [tests/api/contract-drift.test.sh](../tests/api/contract-drift.test.sh) proves a required/type mutation is detected.
 
-| Method and path | Purpose |
-| --- | --- |
-| `POST /api/v1/intakes` | Stream bundle and manifest; return immutable intake/quarantine state |
-| `GET /api/v1/intakes/{id}` | Intake metadata and current state |
-| `GET /api/v1/intakes/{id}/graph` | Declared/observed/inferred/forbidden graph projection |
-| `PUT /api/v1/intakes/{id}/manifest` | Store optimistic-revision manifest draft |
-| `POST /api/v1/intakes/{id}/trials` | Start frozen scenario-pack trial |
-| `GET /api/v1/trials/{id}` | Trial state/result |
-| `GET /api/v1/trials/{id}/events` | Correlated SSE event stream |
-| `POST /api/v1/intakes/{id}/admissions` | Policy/human decision with idempotency key |
-| `POST /api/v1/intakes/{id}/remediations` | Generate an explicit least-capability patch |
-| `POST /api/v1/intakes/{id}/remediations/{rid}/trials` | Re-run a selected repair |
-| `GET /api/v1/registry` | Admitted versions accessible to principal |
-| `GET /api/v1/registry/{plugin}/{version}` | Durable admission, graph and receipt |
-| `POST /api/v1/registry/{plugin}/{version}/revoke` | Governed revocation |
-| `GET /api/v1/audit/{correlation_id}` | Correlated append-only audit |
-| `GET /healthz`, `GET /readyz` | Unauthenticated, non-sensitive health/readiness |
+[crates/cpm-service/src/lib.rs](../crates/cpm-service/src/lib.rs) applies correlation, tracing, timeout, authentication, role authorization, policy, validation, and stable errors before calling the application. Failure cases cannot dispatch upstreams or activate registry state.
 
-OpenAPI is the contract source. The TypeScript client is generated or checked from it, and a drift test compares routes, DTOs, enum values, error variants, auth scopes, and schema hash.
-
-## Registered middleware order
-
-1. Correlation ID validation/generation.
-2. Observability span and metrics context.
-3. Consistent error-envelope mapping.
-4. Timeout and cancellation.
-5. Bearer authentication.
-6. Boundary validation: content type, size, schema, path IDs.
-7. Role/resource authorization.
-8. Cedar policy.
-
-## Failure matrix
-
-- Missing, malformed, expired, and wrong-audience token.
-- Cross-tenant or wrong-resource access.
-- Invalid manifest and unsupported API version.
-- Oversize/truncated bundle.
-- Timeout/cancel propagation into trial job.
-- Correlation preservation from browser through upstream traces.
-- Redacted error output and emitted observability.
-- Cedar deny before trial launch, registry activation, or current-pointer update.
-
-A denial audit event is permitted and is separate from the forbidden admission side effect.
+The generated runtime in [api/client/runtime.ts](../api/client/runtime.ts) is the frontend network boundary. ProductApp renders server-owned outcomes instead of recomputing governance. Browser traces must carry the same correlation ID through response, receipts, store, and audit query.

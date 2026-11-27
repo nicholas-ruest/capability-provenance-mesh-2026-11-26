@@ -1,28 +1,14 @@
-# Planned crate-to-backend call paths
+# Crate-to-backend call paths
 
-## Entrypoint
+| Operation | Real call path | Stored/rendered result |
+|---|---|---|
+| submit intake | ProductApp -> generated client -> service -> application -> artifact-intake -> manifest -> capability-model -> lineage | candidate digest and declaration |
+| gather evidence | application -> cpm-upstreams UpstreamSet -> cpm-upstream-runtime -> pinned harness -> observation -> receipts | seven hashed observations |
+| decide | application -> effect-graph -> risk -> trial-state -> admission | Accepted, Denied, or Incomplete decision |
+| persist | application -> store append -> registry activate only when accepted | audit history and active projection |
+| query after restart | service GET -> store/registry read -> typed API -> ProductApp | same decision and active state |
+| remediate | application -> Autogenous typed module -> remediation -> new intake | child digest with parent lineage |
 
-`cpm-service` will own the only production service binary. It constructs middleware, OpenDAL, upstream adapters, the application service, and the background trial worker. Every counted crate must be reachable by normal production Cargo edges from this binary.
+The concrete service and application implementations are [crates/cpm-service/src/lib.rs](../crates/cpm-service/src/lib.rs) and [crates/cpm-application/src/lib.rs](../crates/cpm-application/src/lib.rs). The seven integration modules are indexed by [crates/cpm-upstreams/src/lib.rs](../crates/cpm-upstreams/src/lib.rs). Browser proof is executed by [scripts/browser-journeys.spec.cjs](../scripts/browser-journeys.spec.cjs).
 
-## Command paths
-
-| Use case | Planned call path |
-| --- | --- |
-| Intake | service -> middleware -> application -> artifact-intake -> contracts/store -> lineage -> rune/rvm |
-| Trial | service -> middleware -> application -> scenarios/trial-state/resource-budget -> wasmtime -> observation -> latentmesh -> effect-graph/worldgraph |
-| Admission | service -> middleware/cedar -> application -> risk/apx/admission -> receipts/store/registry |
-| Remediation | service -> middleware -> application -> capability-model/effect-graph/remediation -> manifest -> trial |
-| Retrieval | service -> middleware/cedar -> application -> registry/store/receipts -> API response |
-| Revocation | service -> middleware/cedar -> application -> admission/registry/receipts/store |
-
-## Background workflow
-
-The trial worker is service-owned production behavior. Jobs carry correlation, tenant, immutable artifact, scenario-pack, policy, and resource-budget identifiers. Cancellation and timeout flow to Wasmtime epoch interruption. Results cannot update admission state except through the application service.
-
-## Enforcement
-
-The backend metadata suite must run the exact command:
-
-`cargo metadata --locked --offline --format-version 1`
-
-It will be recorded by the canonical product recorder. Development/build-only and disconnected packages cannot count.
+No path permits an adapter to write active registry state. The application completes admission first, persists the decision, and conditionally activates accepted candidates.

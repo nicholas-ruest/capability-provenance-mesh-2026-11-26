@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "projects": [
+    {"repository":"ruvnet/autogenous","revision":"3155111ae78039c3993a544044a9cac041090ea6","license":"MIT","directory":"ruvnet_autogenous"},
+    {"repository":"ruvnet/ruGraph","revision":"d66d976c0ba8fa792fcf024c2a07b51480e4fbf1","license":"MIT","directory":"ruvnet_ruGraph"},
+    {"repository":"ruvnet/agenticow","revision":"a6467863e250371562c2e0c83f5f993459607746","license":"MIT","directory":"ruvnet_agenticow"},
+    {"repository":"ruvnet/ai-text-watermark","revision":"5871cf5fef6547c97626ba72d976f167562dab2a","license":"MIT","directory":"ruvnet_ai-text-watermark"},
+    {"repository":"ruvnet/LatentMesh","revision":"b04a70523196181aadc6d694e02de1f5722fae6b","license":"MIT","directory":"ruvnet_LatentMesh"},
+    {"repository":"NVIDIA/SkillSpector","revision":"48e0f942ea1f5fdb7aa096a6f65a0adeda2ecc4e","license":"Apache-2.0","directory":"NVIDIA_SkillSpector"},
+    {"repository":"sigstore/cosign","revision":"252f10a80ba871152a12e5ee324ad1e02c85d079","license":"Apache-2.0","directory":"sigstore_cosign"}
+  ]
+}

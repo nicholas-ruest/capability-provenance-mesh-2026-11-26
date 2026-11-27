@@ -1,0 +1,69 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Capability Provenance Mesh Runtime API", "version": "1.0.0" },
+  "paths": {
+    "/healthz": { "get": { "operationId": "health", "responses": { "200": { "description": "Live" } } } },
+    "/readyz": { "get": { "operationId": "ready", "x-runtime-client": true, "responses": { "200": { "description": "Ready" } } } },
+    "/api/v1/intakes": { "post": {
+      "operationId": "submitIntake", "x-runtime-client": true, "security": [{ "bearerAuth": [] }],
+      "parameters": [
+        { "name": "x-cpm-role", "in": "header", "required": true, "schema": { "type": "string", "const": "reviewer" } },
+        { "name": "x-cpm-policy", "in": "header", "required": false, "schema": { "type": "string", "enum": ["allow", "deny"] } }
+      ],
+      "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CapabilitySubmission" } } } },
+      "responses": {
+        "200": { "description": "Durable admission decision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DecisionRecord" } } } },
+        "400": { "$ref": "#/components/responses/Error" }, "401": { "$ref": "#/components/responses/Error" },
+        "403": { "$ref": "#/components/responses/Error" }, "408": { "$ref": "#/components/responses/Error" }, "415": { "$ref": "#/components/responses/Error" }, "422": { "$ref": "#/components/responses/Error" }
+      }
+    } },
+    "/api/v1/registry/{plugin}/{version}": { "get": {
+      "operationId": "getDecision", "x-runtime-client": true, "security": [{ "bearerAuth": [] }],
+      "parameters": [
+        { "name": "plugin", "in": "path", "required": true, "schema": { "type": "string" } },
+        { "name": "version", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "responses": { "200": { "description": "Saved decision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DecisionRecord" } } } }, "404": { "$ref": "#/components/responses/Error" } }
+    } },
+    "/api/v1/audit/{correlation}": { "get": {
+      "operationId": "getAudit", "x-runtime-client": true, "security": [{ "bearerAuth": [] }],
+      "parameters": [{ "name": "correlation", "in": "path", "required": true, "schema": { "type": "string" } }],
+      "responses": { "200": { "description": "Audit decision", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DecisionRecord" } } } }, "404": { "$ref": "#/components/responses/Error" } }
+    } }
+  },
+  "components": {
+    "securitySchemes": { "bearerAuth": { "type": "http", "scheme": "bearer" } },
+    "responses": { "Error": { "description": "Typed error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } } } },
+    "schemas": {
+      "CapabilityManifest": { "type": "object", "additionalProperties": false,
+        "required": ["api_version", "name", "entrypoint", "capabilities"],
+        "properties": {
+          "api_version": { "type": "string", "enum": ["cpm.capability/v1"] },
+          "name": { "type": "string" }, "entrypoint": { "type": "string" },
+          "capabilities": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "CapabilitySubmission": { "type": "object", "additionalProperties": false,
+        "required": ["plugin", "version", "artifact", "manifest", "human_approved", "denial_probe"],
+        "properties": {
+          "plugin": { "type": "string" }, "version": { "type": "string" },
+          "artifact": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 255 } },
+          "manifest": { "$ref": "#/components/schemas/CapabilityManifest" },
+          "human_approved": { "type": "boolean" }, "denial_probe": { "type": "boolean" }
+        }
+      },
+      "DecisionRecord": { "type": "object", "additionalProperties": false,
+        "required": ["correlation_id", "plugin", "version", "admitted", "artifact_digest", "receipt_checksum", "upstream_receipts"],
+        "properties": {
+          "correlation_id": { "type": "string" }, "plugin": { "type": "string" }, "version": { "type": "string" },
+          "admitted": { "type": "boolean" }, "artifact_digest": { "type": "string" },
+          "receipt_checksum": { "type": "string" },
+          "upstream_receipts": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "ErrorEnvelope": { "type": "object", "required": ["code", "message", "correlation_id"],
+        "properties": { "code": { "type": "string" }, "message": { "type": "string" }, "correlation_id": { "type": "string" } }
+      }
+    }
+  }
+}

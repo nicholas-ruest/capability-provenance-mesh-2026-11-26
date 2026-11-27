@@ -1,0 +1,25 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running unittests src/lib.rs (target/debug/build/latentmesh-agentbbs-bridge/4b8380ddddd777b1/out/latentmesh_agentbbs_bridge-4b8380ddddd777b1)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.00s
+
+     Running tests/bridge_roundtrip.rs (target/debug/build/latentmesh-agentbbs-bridge/5354912c58c68b44/out/bridge_roundtrip-5354912c58c68b44)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/golden_payloads.rs (target/debug/build/latentmesh-agentbbs-bridge/cd34299e37446366/out/golden_payloads-cd34299e37446366)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/live_agentbbs_mcp.rs (target/debug/build/latentmesh-agentbbs-bridge/130690db863a5bce/out/live_agentbbs_mcp-130690db863a5bce)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+

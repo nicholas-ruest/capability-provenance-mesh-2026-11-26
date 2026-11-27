@@ -1,31 +1,29 @@
-# ADR coverage plan
+# Architecture decision records
 
-These are planned decision records, not completed ADRs. Each ADR will be written when its alternatives can be evaluated against running behavior. The final documents must contain context, viable alternatives, decision, tradeoffs, consequences, validation, implementation paths, test paths, and reciprocal crate/DDD mappings.
+Each accepted record names a concrete choice, rejected alternative, real source/test location, and observable acceptance condition.
 
-| ADR | Decision-specific subject | Status |
-| --- | --- | --- |
-| 001 | Modular-monolith composition root versus services | Planned |
-| 002 | Application command/query and background-job boundaries | Planned |
-| 003 | Stable identity, digest, revision, and error contracts | Planned |
-| 004 | Streaming quarantine before any plugin interpretation | Planned |
-| 005 | Versioned manifest and capability vocabulary evolution | Planned |
-| 006 | Frozen Rune plan and artifact-lineage trust contract | Planned |
-| 007 | RVM inspection boundary without execution overclaim | Planned |
-| 008 | Monotonic capability attenuation and budget algebra | Planned |
-| 009 | Host-call observation normalization and source binding | Planned |
-| 010 | WorldGraph projection and transitive effect closure | Planned |
-| 011 | Explainable risk and incomplete-evidence refusal | Planned |
-| 012 | Frozen deterministic scenario-pack identity | Planned |
-| 013 | Wasmtime fuel, memory, epoch, and host-call limits | Planned |
-| 014 | Trial lifecycle, cancellation, retry, and idempotency | Planned |
-| 015 | Human-plus-Cedar admission state machine | Planned |
-| 016 | Counterexample-guided least-capability remediation | Planned |
-| 017 | Canonical receipt and correlation hash chain | Planned |
-| 018 | OpenDAL append-only events, snapshots, and atomic current pointer | Planned |
-| 019 | LatentMesh signed envelope and replay defense | Planned |
-| 020 | APx eligibility separated from security/admission | Planned |
-| 021 | Typed OpenAPI and generated/checked TypeScript client | Planned |
-| 022 | Middleware registration order and no-effect denial | Planned |
-| 023 | SSE trial progress with bounded backpressure | Planned |
-| 024 | Container and Cloud Run-compatible topology without deployment | Planned |
-| 025 | Evidence collector, immutable candidate, and CI artifact binding | Planned |
+- [ADR-001: Count behavior, not package names](001.md)
+- [ADR-002: Candidate identity begins with normalized bytes](002.md)
+- [ADR-003: Parse declarations once into a domain manifest](003.md)
+- [ADR-004: Effective authority is a monotone intersection](004.md)
+- [ADR-005: Lineage records immutable ancestry](005.md)
+- [ADR-006: Normalize observations before policy](006.md)
+- [ADR-007: Completeness is a connected effect graph](007.md)
+- [ADR-008: Risk preserves critical findings and dissent](008.md)
+- [ADR-009: Scenarios are versioned domain fixtures](009.md)
+- [ADR-010: Budgets are explicit policy](010.md)
+- [ADR-011: Trials use guarded persisted transitions](011.md)
+- [ADR-012: Admission has Accepted, Denied, and Incomplete](012.md)
+- [ADR-013: Remediation creates a new proposal and digest](013.md)
+- [ADR-014: Receipts are canonical operation evidence](014.md)
+- [ADR-015: Registry activation is not decision creation](015.md)
+- [ADR-016: Directory storage uses atomic append semantics](016.md)
+- [ADR-017: Subprocess execution is one hardened runtime](017.md)
+- [ADR-018: Seven integrations share one crate but not one type](018.md)
+- [ADR-019: Middleware precedes all effects](019.md)
+- [ADR-020: OpenAPI is the sole public contract source](020.md)
+- [ADR-021: The browser renders server-owned lifecycle state](021.md)
+- [ADR-022: Application owns transaction boundaries](022.md)
+- [ADR-023: Frontier evaluation compares decisions, not just time](023.md)
+- [ADR-024: Containers follow the verified rootless topology](024.md)
+- [ADR-025: Exact-source evidence gates publication](025.md)

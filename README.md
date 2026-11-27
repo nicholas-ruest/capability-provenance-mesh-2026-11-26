@@ -1,34 +1,106 @@
 # Capability Provenance Mesh
 
-Capability Provenance Mesh is a planned browser-operated admission workbench for platform teams that must decide whether a third-party WASM or plugin bundle may run. It will compare declared permissions with observed host calls, transitive dependency effects, build lineage, resource behavior, and task usefulness; a reviewer can deny, admit, or repair the manifest with a replayable receipt.
+![Capability Provenance Mesh flow](assets/capability-provenance-flow.svg)
 
-## Current state
+Capability Provenance Mesh is a security workbench for teams that must decide whether a third-party agent capability may run. It turns a submitted bundle into an evidence graph, evaluates authority and reversibility, quarantines effects, produces a signed admission receipt, and preserves restart-durable audit and replay.
 
-This commit is the **design-first foundation only**. It contains one substantive contracts crate so Cargo metadata and the shared identity vocabulary are real; it deliberately avoids a count-first crate scaffold, fake integration, or runtime evidence. The first implementation milestone must be a running browser-to-persisted-result slice. The final product contract remains 20+ meaningful backend-integrated Rust crates, 25 substantive ADRs, 12 substantive DDD documents, a functional React/TypeScript frontend, executable middleware, five executed Ruvnet and two enterprise upstreams, three real browser journeys, restart durability, benchmarks/ablations, and source-bound evidence.
+Its unusual capability is **Evidence-Closed Capability Admission (ECCA)**: the same candidate identity must survive inspection, evidence closure, policy evaluation, quarantine, signed promotion, and restart-durable replay. A denial is useful evidence only when it also proves that no registry effect occurred.
 
-## Planned product interaction
+> Execution status is evidence-driven. This README does not claim a passing build until exact-head CI publishes the source-bound evidence artifact.
 
-- Upload and quarantine an executable plugin bundle.
-- Inspect declared, observed, inferred, and forbidden capability edges.
-- Run deterministic sandbox scenarios with live correlated events.
-- Review denial reasons and a least-capability manifest repair.
-- Admit a safe revision and retrieve its graph, receipt, and audit after restart.
+## Product surface
 
-## Design map
+- **Intake and provenance:** hash, inspect, and quarantine a capability bundle.
+- **Adaptive admission:** combine typed policy, graph evidence, and bounded repair.
+- **Quarantine and replay:** prove denial has no downstream mutation, then replay a corrected bundle.
+- **Attestation and audit:** sign admitted artifacts and retrieve the decision after refresh and backend restart.
+- **Operator UI:** responsive React/TypeScript intake, evidence-graph, repair, replay, registry, and audit views.
+- **Rust composition:** versioned Axum API, ordered middleware, application services, background work, and durable shared-storage boundaries.
 
-- [Specification](docs/specification.md)
-- [Architecture](docs/architecture.md)
-- [Implementation contract](docs/implementation-contract.md)
-- [Topology](docs/topology.md)
-- [Crate coverage plan](docs/crate-map.md)
-- [ADR coverage index](docs/adr/index.md)
-- [DDD coverage index](docs/ddd/index.md)
-- [Prototype acceptance](docs/prototype-acceptance.md)
-- [Integration matrix](docs/integration-matrix.md)
-- [API and middleware plan](docs/api-middleware-plan.md)
-- [Evidence plan](docs/evidence-plan.md)
-- [Rust source-share budget](docs/rust-share-budget.md)
+## Frontier Research and Open Source Foundations
 
-## Gate integrity
+ECCA turns upstream security tools into one candidate-bound admission proof rather than a decorative dependency list. The [strategic novelty record](docs/strategic-novelty.md) contains the weighted concept decision, last-10 taxonomy, dated census, mechanism invariants, and measured boundary.
 
-The repository contains the pinned canonical product, selection, and backend modules, their bundle verifier/manifest, the full-product wrapper installed as `scripts/verify-prototype.sh`, and the supplement Rust-share/publication gates. Byte integrity is necessary but is not product completion.
+| Foundation | Immutable source and license | Executed product responsibility and call path | Evidence and interest |
+|---|---|---|---|
+| **NVIDIA SkillSpector (marquee OSS)** | [48e0f942ea1f5fdb7aa096a6f65a0adeda2ecc4e](https://github.com/NVIDIA/SkillSpector/tree/48e0f942ea1f5fdb7aa096a6f65a0adeda2ecc4e), Apache-2.0 | Inspect submitted skills for severity and remediation through [the typed adapter](crates/cpm-upstreams/src/skillspector.rs), [production composition](crates/cpm-upstreams/src/lib.rs), and [success/failure harnesses](crates/cpm-service/upstream-harness/) | [Success receipt](selection-evidence/selection-evidence-v3/skillspector-success/integrations-f0bf7ff3-0c20-4baf-809d-b8e21d510248.receipt.json) and [failure receipt](selection-evidence/selection-evidence-v3/skillspector-failure/integrations-1309caf5-2976-49d7-b4a5-1c418b17777c.receipt.json). It is interesting because static skill-security findings become candidate-bound admission evidence. |
+| **Sigstore Cosign (complementary second-organization OSS)** | [252f10a80ba871152a12e5ee324ad1e02c85d079](https://github.com/sigstore/cosign/tree/252f10a80ba871152a12e5ee324ad1e02c85d079), Apache-2.0 | Sign and verify admitted artifact identity, including tamper rejection, through [the typed adapter](crates/cpm-upstreams/src/cosign.rs), [production composition](crates/cpm-upstreams/src/lib.rs), and [success/failure harnesses](crates/cpm-service/upstream-harness/) | [Success receipt](selection-evidence/selection-evidence-v3/cosign-success/integrations-ab152e22-b66e-4d03-972f-165db5202b50.receipt.json) and [failure receipt](selection-evidence/selection-evidence-v3/cosign-failure/integrations-61342e12-4e43-48cf-81dd-fa3f5b184d4d.receipt.json). It complements inspection by binding the promoted revision to a verifiable signature. |
+
+SkillSpector and Cosign come from distinct organizations and serve different responsibilities: inspect before admission, then attest the exact promoted artifact. Their inclusion, names, and trademarks do not imply endorsement, sponsorship, or affiliation by NVIDIA, Sigstore, or their contributors. Runtime claims remain subject to exact-head evidence.
+
+## One-command local launch
+
+```bash
+cp .env.example .env
+./scripts/start.sh
+```
+
+Open <http://127.0.0.1:4173>. The API is at <http://127.0.0.1:8080>; `/healthz` is liveness and `/readyz` verifies application readiness.
+
+```bash
+./scripts/seed.sh       # deterministic synthetic capability
+./scripts/readiness.sh  # frontend + API
+./scripts/stop.sh
+./scripts/reset.sh      # stops and removes only the configured local state directory
+```
+
+Rootless container launch uses the same topology:
+
+```bash
+./scripts/start.sh --containers
+./scripts/stop.sh --containers
+```
+
+## Architecture
+
+```mermaid
+flowchart TD
+  UI[React workbench] --> API[Typed API]
+  API --> MW[Ordered middleware]
+  MW --> APP[Rust application]
+  APP --> EVID[Evidence graph and policy]
+  APP --> Q[Quarantine and replay]
+  Q --> STORE[Durable audit store]
+```
+
+The default production binary is `cpm-service`. Middleware order is correlation, observability, errors, timeout, authentication, validation, authorization, and policy. A denied request may append a denial audit event but cannot dispatch a capability, mutate the parent state, or advance the admitted pointer.
+
+See [architecture](docs/architecture.md), [implementation contract](docs/implementation-contract.md), [integration matrix](docs/integration-matrix.md), [crate map](docs/crate-map.md), [call paths](docs/crate-to-backend-call-paths.md), and [prototype acceptance](docs/prototype-acceptance.md).
+
+## Selected runtime composition
+
+| Upstream | Product responsibility |
+| --- | --- |
+| ruvnet/autogenous | typed mutation, fitness gating, promotion, rollback |
+| ruvnet/ruGraph | evidence graph, uncertainty and replay |
+| ruvnet/agenticow | copy-on-write quarantine and parent isolation |
+| ruvnet/ai-text-watermark | keyed provenance |
+| ruvnet/LatentMesh | authenticated envelopes and replay rejection |
+| NVIDIA/SkillSpector | capability inspection and severity |
+| sigstore/cosign | offline signing and tamper rejection |
+
+Each count requires an immutable revision, license, real call site, failure test, and source-bound runtime trace. The selection report is the authority for exact revisions.
+
+## Verification
+
+```bash
+DREAM_MACHINE_EVIDENCE_DIR=/absolute/path/outside/checkout ./scripts/verify-prototype.sh
+```
+
+The collector executes ten suites: Rust, Cargo production graph, frontend, API drift, middleware, integrations, benchmark, ablations, rootless containers, and browser journeys. It records commands, separate backend stdout/stderr, timestamps, exit codes, and hashes. It never creates a PASS receipt for a failed command.
+
+CI runs the same publication controller in `--check` mode and runs the Rust source-floor checker separately. Evidence remains external to the checkout to avoid circular hashes.
+
+## Containers and Cloud Run
+
+`compose.yml` defines a rootless, unprivileged, read-only local topology with explicit writable data and temporary mounts. `deploy/cloud-run-service.yaml` and `deploy/rollback.env.example` are configuration only. Nothing in this repository deploys, spends, merges, or weakens approval policy.
+
+## Current results and limitations
+
+- Benchmark, ablation, browser, and evidence results are **pending exact-head execution**.
+- External upstream availability and platform sandbox behavior must be proven by the integration suite; imports or version output do not count.
+- Local filesystem persistence is for authorized development/CI only. Production must bind an approved shared-storage backend.
+- Cloud Run configuration is supplied but has not been deployed.
+- Publication requires a non-draft PR and readback; `publish-via-pr.sh` refuses non-personal owners and never merges.
+
+![Evidence lifecycle](assets/evidence-lifecycle.svg)

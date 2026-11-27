@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 root="$(git rev-parse --show-toplevel)"; cd "$root"
+[[ -f .env ]] && set -a && source .env && set +a
 if [[ "${1:-}" == "--containers" ]]; then exec podman compose -f compose.yml down --remove-orphans; fi
-state="$root/.runtime"
+state="${CPM_RUN_DIR:-${XDG_RUNTIME_DIR:-/tmp}/capability-provenance-mesh-${UID}}"
 for name in frontend api; do
   file="$state/$name.pid"
   if [[ -s "$file" ]]; then

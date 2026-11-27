@@ -1,5 +1,13 @@
-import { CapabilitySubmission, DecisionRecord, ErrorEnvelope } from "./schema";
+import { API_OPERATIONS, CapabilitySubmission, DecisionRecord, ErrorEnvelope } from "./schema";
 export type { CapabilityManifest, CapabilitySubmission, DecisionRecord } from "./schema";
+
+function bindPath(template: string, values: Record<string, string>): string {
+  return template.replace(/\{([^}]+)\}/g, (_placeholder, name: string) => {
+    const value = values[name];
+    if (value === undefined) throw new Error(`Missing API path parameter: ${name}`);
+    return encodeURIComponent(value);
+  });
+}
 
 export interface UpstreamEvidence {
   project: string;
@@ -81,18 +89,18 @@ export class RuntimeClient {
     return (text ? JSON.parse(text) : { status: "ready" }) as T;
   }
 
-  ready(): Promise<{ status: string }> { return this.request("/readyz"); }
+  ready(): Promise<{ status: string }> { return this.request(API_OPERATIONS.ready.path); }
 
   submit(input: CapabilitySubmission, policy: "allow" | "deny" = "allow"): Promise<DecisionRecord> {
     const headers = policy === "deny" ? { "X-CPM-Policy": "deny" } : undefined;
-    return this.request("/api/v1/intakes", { method: "POST", headers, body: JSON.stringify(input) });
+    return this.request(API_OPERATIONS.submitIntake.path, { method: API_OPERATIONS.submitIntake.method, headers, body: JSON.stringify(input) });
   }
 
   getDecision(plugin: string, version: string): Promise<DecisionRecord> {
-    return this.request(`/api/v1/registry/${encodeURIComponent(plugin)}/${encodeURIComponent(version)}`);
+    return this.request(bindPath(API_OPERATIONS.getDecision.path, { plugin, version }));
   }
 
   getAudit(correlation: string): Promise<DecisionRecord> {
-    return this.request(`/api/v1/audit/${encodeURIComponent(correlation)}`);
+    return this.request(bindPath(API_OPERATIONS.getAudit.path, { correlation }));
   }
 }

@@ -265,6 +265,15 @@ test("[journey:durable-retrieval] survives refresh and backend restart with audi
     original.correlation_id,
   );
 
+  const mobileLayout = await page.evaluate(() => ({
+    viewportWidth: document.documentElement.clientWidth,
+    documentScrollWidth: document.documentElement.scrollWidth,
+    bodyScrollWidth: document.body.scrollWidth,
+  }));
+  expect(
+    Math.max(mobileLayout.documentScrollWidth, mobileLayout.bodyScrollWidth),
+    `mobile layout overflowed: ${JSON.stringify(mobileLayout)}`,
+  ).toBeLessThanOrEqual(mobileLayout.viewportWidth);
   await page.screenshot({ path: `${evidenceDir}/mobile.png`, fullPage: true });
   await recorder.flush();
 });

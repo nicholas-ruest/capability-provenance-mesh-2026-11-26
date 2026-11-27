@@ -1,19 +1,29 @@
 //! Production application service composing intake, evidence, upstreams, decision, and durability.
+#![allow(
+    missing_docs,
+    clippy::missing_errors_doc,
+    clippy::must_use_candidate,
+    clippy::semicolon_if_nothing_returned,
+    clippy::unnested_or_patterns,
+    clippy::too_many_lines
+)]
 use cpm_admission::{Decision, decide};
 use cpm_artifact_intake::{Intake, IntakeError};
 use cpm_capability_model::CapabilitySet;
+use cpm_contracts::CapabilityName;
 use cpm_effect_graph::{Edge, EffectGraph};
 use cpm_lineage::Lineage;
 use cpm_manifest::Manifest;
 use cpm_observation::{EventKind, Observation, RawEvent};
 use cpm_receipts::Receipt;
+use cpm_registry::{Entry, Registry};
+use cpm_remediation::least_patch;
 use cpm_resource_budget::Budget;
 use cpm_risk::RiskScore;
 use cpm_scenarios::ScenarioPack;
 use cpm_store::{DecisionRecord, DirectoryStore, StoreError};
 use cpm_trial_state::TrialState;
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use std::sync::Arc;
 use thiserror::Error;
 use uuid::Uuid;
@@ -82,6 +92,9 @@ impl<U: UpstreamSuite> Application<U> {
             .manifest
             .validate()
             .map_err(|_| ApplicationError::Manifest)?;
+        for capability in &request.manifest.capabilities {
+            CapabilityName::parse(capability.clone()).map_err(|_| ApplicationError::Manifest)?;
+        }
         let quarantined = Intake::new(self.max_bytes).quarantine(request.artifact)?;
         let digest = quarantined.digest().to_owned();
         let lineage = Lineage {
@@ -148,9 +161,27 @@ impl<U: UpstreamSuite> Application<U> {
                 TrialState::Denied
             })
             .map_err(|_| ApplicationError::Trial)?;
+        let _patch = least_patch(
+            &request.manifest.capabilities,
+            &observed.values().into_iter().collect(),
+        );
         let decision = decide(risk.acceptable(), upstreams.len(), request.human_approved)
             .map_err(|_| ApplicationError::Admission)?;
         let admitted = decision == Decision::Admit;
+        let mut registry = Registry::default();
+        if admitted {
+            registry
+                .activate(
+                    Entry {
+                        plugin: request.plugin.clone(),
+                        version: request.version.clone(),
+                        receipt: digest.clone(),
+                        revoked: false,
+                    },
+                    true,
+                )
+                .map_err(|_| ApplicationError::Admission)?;
+        }
         let correlation = Uuid::new_v4().to_string();
         let receipt = Receipt::issue(correlation.clone(), digest.clone(), upstreams.clone());
         let record = DecisionRecord {

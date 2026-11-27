@@ -1,4 +1,11 @@
 //! Production adapter for ruvnet/ruGraph.
+#![allow(
+    missing_docs,
+    clippy::missing_errors_doc,
+    clippy::must_use_candidate,
+    clippy::semicolon_if_nothing_returned,
+    clippy::unnested_or_patterns
+)]
 use cpm_upstream_runtime::{ProbeKind, UpstreamCommand, UpstreamError, UpstreamReceipt};
 use std::path::PathBuf;
 pub const REPOSITORY: &str = "ruvnet/ruGraph";

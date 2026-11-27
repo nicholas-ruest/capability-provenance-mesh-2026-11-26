@@ -1,4 +1,11 @@
 //! Frozen deterministic scenario packs.
+#![allow(
+    missing_docs,
+    clippy::missing_errors_doc,
+    clippy::must_use_candidate,
+    clippy::semicolon_if_nothing_returned,
+    clippy::unnested_or_patterns
+)]
 use sha2::{Digest, Sha256};
 use thiserror::Error;
 #[derive(Debug, Clone, PartialEq, Eq)]

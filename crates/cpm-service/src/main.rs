@@ -1,3 +1,4 @@
+//! Capability Provenance Mesh HTTP service.
 use cpm_service::{AppState, router};
 use std::{env, path::PathBuf};
 #[tokio::main]

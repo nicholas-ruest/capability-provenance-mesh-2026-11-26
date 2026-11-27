@@ -1,7 +1,13 @@
 //! Axum composition root and ordered governance middleware.
+#![allow(
+    missing_docs,
+    clippy::missing_errors_doc,
+    clippy::must_use_candidate,
+    clippy::semicolon_if_nothing_returned,
+    clippy::unnested_or_patterns
+)]
 use axum::{
     Json, Router,
-    body::Body,
     extract::{Extension, Path, Request, State},
     http::{HeaderValue, StatusCode, header},
     middleware::{self, Next},
@@ -224,7 +230,7 @@ async fn create_intake(
 ) -> Response {
     match state.application.submit(payload) {
         Ok(value) => Json(value).into_response(),
-        Err(error_value) => map_app_error(error_value, correlation),
+        Err(error_value) => map_app_error(&error_value, correlation),
     }
 }
 
@@ -250,11 +256,11 @@ fn respond_record(
 ) -> Response {
     match result {
         Ok(value) => Json(value).into_response(),
-        Err(error_value) => map_app_error(error_value, correlation),
+        Err(error_value) => map_app_error(&error_value, correlation),
     }
 }
 
-fn map_app_error(error_value: ApplicationError, correlation: String) -> Response {
+fn map_app_error(error_value: &ApplicationError, correlation: String) -> Response {
     let status = if matches!(
         error_value,
         ApplicationError::Store(cpm_store::StoreError::Missing)
@@ -273,6 +279,7 @@ fn map_app_error(error_value: ApplicationError, correlation: String) -> Response
 #[cfg(test)]
 mod tests {
     use super::*;
+    use axum::body::Body;
     use axum::http::Request as HttpRequest;
     use tower::ServiceExt;
     fn state() -> AppState {

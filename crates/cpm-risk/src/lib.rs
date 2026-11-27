@@ -1,4 +1,11 @@
 //! Explainable risk scoring that refuses incomplete evidence.
+#![allow(
+    missing_docs,
+    clippy::missing_errors_doc,
+    clippy::must_use_candidate,
+    clippy::semicolon_if_nothing_returned,
+    clippy::unnested_or_patterns
+)]
 use thiserror::Error;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RiskScore {

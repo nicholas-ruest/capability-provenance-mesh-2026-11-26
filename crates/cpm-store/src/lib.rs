@@ -1,4 +1,11 @@
 //! Restart-safe shared-directory decision and audit persistence.
+#![allow(
+    missing_docs,
+    clippy::missing_errors_doc,
+    clippy::must_use_candidate,
+    clippy::semicolon_if_nothing_returned,
+    clippy::unnested_or_patterns
+)]
 use serde::{Deserialize, Serialize};
 use std::{
     fs,

@@ -25,7 +25,6 @@ use cpm_store::{DecisionRecord, DirectoryStore, StoreError};
 use cpm_trial_state::TrialState;
 use cpm_upstreams::CandidateContext;
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use std::sync::Arc;
 use thiserror::Error;
 use uuid::Uuid;
@@ -156,21 +155,16 @@ impl<U: UpstreamSuite> Application<U> {
         let state = TrialState::Queued
             .transition(TrialState::Running)
             .map_err(|_| ApplicationError::Trial)?;
-        let mut manifest_hasher = Sha256::new();
-        manifest_hasher.update(request.manifest.api_version.as_bytes());
-        manifest_hasher.update(request.manifest.name.as_bytes());
-        manifest_hasher.update(request.manifest.entrypoint.as_bytes());
-        for capability in &request.manifest.capabilities {
-            manifest_hasher.update(capability.as_bytes());
-        }
-        let candidate = CandidateContext {
-            plugin: request.plugin.clone(),
-            version: request.version.clone(),
-            artifact_sha256: digest.clone(),
-            manifest_sha256: format!("{:x}", manifest_hasher.finalize()),
-            declared_capabilities: declared.values(),
-            observed_effects: observed.values(),
-        };
+        let manifest_json =
+            serde_json::to_string(&request.manifest).map_err(|_| ApplicationError::Manifest)?;
+        let candidate = CandidateContext::from_material(
+            request.plugin.clone(),
+            request.version.clone(),
+            quarantined.bytes().to_vec(),
+            manifest_json,
+            declared.values(),
+            observed.values(),
+        );
         let upstreams = self
             .upstreams
             .execute_all(&candidate, request.denial_probe)

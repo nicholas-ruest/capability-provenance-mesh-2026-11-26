@@ -7,7 +7,13 @@
     clippy::unnested_or_patterns
 )]
 use sha2::{Digest, Sha256};
-use std::{path::PathBuf, process::Command};
+use std::{
+    fs::{self, OpenOptions},
+    io::Write,
+    path::PathBuf,
+    process::Command,
+    time::{SystemTime, UNIX_EPOCH},
+};
 use thiserror::Error;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProbeKind {
@@ -29,6 +35,8 @@ pub enum UpstreamError {
     Launch(#[source] std::io::Error),
     #[error("probe exited {0:?}")]
     Exit(Option<i32>),
+    #[error("candidate input staging failed: {0}")]
+    Input(#[source] std::io::Error),
 }
 #[derive(Debug, Clone)]
 pub struct UpstreamCommand {
@@ -71,9 +79,28 @@ impl UpstreamCommand {
             command.arg(argument);
         }
         let input_sha256 = format!("{:x}", Sha256::digest(input_payload.as_bytes()));
-        command.env("CPM_UPSTREAM_INPUT", input_payload);
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos();
+        let input_path = std::env::temp_dir().join(format!(
+            "cpm-upstream-input-{}-{nonce}.json",
+            std::process::id()
+        ));
+        let mut input_file = OpenOptions::new()
+            .create_new(true)
+            .write(true)
+            .open(&input_path)
+            .map_err(UpstreamError::Input)?;
+        input_file
+            .write_all(input_payload.as_bytes())
+            .map_err(UpstreamError::Input)?;
+        input_file.sync_all().map_err(UpstreamError::Input)?;
+        command.env("CPM_UPSTREAM_INPUT_FILE", &input_path);
         command.env("CPM_UPSTREAM_INPUT_SHA256", &input_sha256);
-        let output = command.output().map_err(UpstreamError::Launch)?;
+        let output_result = command.output();
+        let _ = fs::remove_file(&input_path);
+        let output = output_result.map_err(UpstreamError::Launch)?;
         if !output.status.success() {
             return Err(UpstreamError::Exit(output.status.code()));
         }

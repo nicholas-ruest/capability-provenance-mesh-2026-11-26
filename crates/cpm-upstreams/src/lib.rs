@@ -45,16 +45,56 @@ pub struct CandidateContext {
     pub version: String,
     pub artifact_sha256: String,
     pub manifest_sha256: String,
+    pub artifact: Vec<u8>,
+    pub manifest_json: String,
     pub declared_capabilities: Vec<String>,
     pub observed_effects: Vec<String>,
 }
 
 impl CandidateContext {
+    #[must_use]
+    pub fn from_material(
+        plugin: String,
+        version: String,
+        artifact: Vec<u8>,
+        manifest_json: String,
+        declared_capabilities: Vec<String>,
+        observed_effects: Vec<String>,
+    ) -> Self {
+        let artifact_sha256 = format!("{:x}", Sha256::digest(&artifact));
+        let manifest_sha256 = format!("{:x}", Sha256::digest(manifest_json.as_bytes()));
+        Self {
+            plugin,
+            version,
+            artifact_sha256,
+            manifest_sha256,
+            artifact,
+            manifest_json,
+            declared_capabilities,
+            observed_effects,
+        }
+    }
+
     pub fn validate(&self) -> Result<(), IntegrationError> {
         common::validate_identifier("plugin", &self.plugin)?;
         common::validate_identifier("version", &self.version)?;
         common::validate_sha256(&self.artifact_sha256)?;
         common::validate_sha256(&self.manifest_sha256)?;
+        if self.artifact.is_empty() || self.manifest_json.is_empty() {
+            return Err(IntegrationError::Validation {
+                field: "candidate_material",
+                reason: "artifact and manifest must be non-empty",
+            });
+        }
+        if format!("{:x}", Sha256::digest(&self.artifact)) != self.artifact_sha256
+            || format!("{:x}", Sha256::digest(self.manifest_json.as_bytes()))
+                != self.manifest_sha256
+        {
+            return Err(IntegrationError::Validation {
+                field: "candidate_material",
+                reason: "material does not match declared digests",
+            });
+        }
         if self.declared_capabilities.is_empty() || self.observed_effects.is_empty() {
             return Err(IntegrationError::Validation {
                 field: "candidate_evidence",
@@ -135,73 +175,75 @@ impl UpstreamSet {
         } else {
             ProbeKind::Success
         };
-        let first_effect = candidate.observed_effects[0].clone();
-        let evidence = vec![
-            self.autogenous.execute(
-                kind,
-                &AutogenesisRequest {
-                    objective: format!(
-                        "derive least-authority plan for {}@{} artifact {}",
-                        candidate.plugin, candidate.version, candidate.artifact_sha256
-                    ),
-                    max_cycles: u16::try_from(candidate.declared_capabilities.len() + 4)
-                        .unwrap_or(256),
-                },
-            )?,
-            self.rugraph.execute(
-                kind,
-                &GraphQuery {
-                    source_node: format!("manifest:{}.{}", candidate.plugin, candidate.version),
-                    target_node: format!(
-                        "effect:{first_effect}:{}",
-                        &candidate.artifact_sha256[..12]
-                    ),
-                    max_depth: 12,
-                },
-            )?,
-            self.agenticow.execute(
-                kind,
-                &ToolContract {
-                    tool_name: candidate.plugin.clone(),
-                    schema_sha256: candidate.manifest_sha256.clone(),
-                    expected_effects: u16::try_from(candidate.observed_effects.len())
-                        .unwrap_or(u16::MAX),
-                },
-            )?,
-            self.watermark.execute(
-                kind,
-                &WatermarkProbe {
-                    text_sha256: candidate.artifact_sha256.clone(),
-                    minimum_score_basis_points: 7_500,
-                },
-            )?,
-            self.latentmesh.execute(
-                kind,
-                &MeshEnvelope {
-                    topic: format!("capability.provenance.{}", candidate.plugin),
-                    payload_sha256: candidate.manifest_sha256.clone(),
-                    hop_limit: 4,
-                },
-            )?,
-            self.skillspector.execute(
-                kind,
-                &SkillInspection {
-                    artifact_sha256: candidate.artifact_sha256.clone(),
-                    policy_profile: "cpm-admission-v1".into(),
-                    max_findings: 128,
-                },
-            )?,
-            self.cosign.execute(
-                kind,
-                &SignatureVerification {
-                    artifact_sha256: candidate.artifact_sha256.clone(),
-                    issuer: "https://issuer.example".into(),
-                    subject: format!("{}@{}", candidate.plugin, candidate.version),
-                },
-            )?,
-        ];
-        debug_assert_eq!(evidence.len(), 7);
-        Ok(evidence)
+        common::with_candidate(candidate, || {
+            let first_effect = candidate.observed_effects[0].clone();
+            let evidence = vec![
+                self.autogenous.execute(
+                    kind,
+                    &AutogenesisRequest {
+                        objective: format!(
+                            "derive least-authority plan for {}@{} artifact {}",
+                            candidate.plugin, candidate.version, candidate.artifact_sha256
+                        ),
+                        max_cycles: u16::try_from(candidate.declared_capabilities.len() + 4)
+                            .unwrap_or(256),
+                    },
+                )?,
+                self.rugraph.execute(
+                    kind,
+                    &GraphQuery {
+                        source_node: format!("manifest:{}.{}", candidate.plugin, candidate.version),
+                        target_node: format!(
+                            "effect:{first_effect}:{}",
+                            &candidate.artifact_sha256[..12]
+                        ),
+                        max_depth: 12,
+                    },
+                )?,
+                self.agenticow.execute(
+                    kind,
+                    &ToolContract {
+                        tool_name: candidate.plugin.clone(),
+                        schema_sha256: candidate.manifest_sha256.clone(),
+                        expected_effects: u16::try_from(candidate.observed_effects.len())
+                            .unwrap_or(u16::MAX),
+                    },
+                )?,
+                self.watermark.execute(
+                    kind,
+                    &WatermarkProbe {
+                        text_sha256: candidate.artifact_sha256.clone(),
+                        minimum_score_basis_points: 7_500,
+                    },
+                )?,
+                self.latentmesh.execute(
+                    kind,
+                    &MeshEnvelope {
+                        topic: format!("capability.provenance.{}", candidate.plugin),
+                        payload_sha256: candidate.manifest_sha256.clone(),
+                        hop_limit: 4,
+                    },
+                )?,
+                self.skillspector.execute(
+                    kind,
+                    &SkillInspection {
+                        artifact_sha256: candidate.artifact_sha256.clone(),
+                        policy_profile: "cpm-admission-v1".into(),
+                        max_findings: 128,
+                    },
+                )?,
+                self.cosign.execute(
+                    kind,
+                    &SignatureVerification {
+                        artifact_sha256: candidate.artifact_sha256.clone(),
+                        issuer: "https://issuer.example".into(),
+                        subject: format!("{}@{}", candidate.plugin, candidate.version),
+                    },
+                )?,
+            ];
+            debug_assert_eq!(evidence.len(), 7);
+            Ok(evidence)
+        })
     }
 }
 
@@ -233,14 +275,7 @@ mod tests {
     }
 
     fn candidate(digest: char) -> CandidateContext {
-        CandidateContext {
-            plugin: "candidate-plugin".into(),
-            version: "1.0.0".into(),
-            artifact_sha256: digest.to_string().repeat(64),
-            manifest_sha256: digest.to_string().repeat(64),
-            declared_capabilities: vec!["blob.read".into()],
-            observed_effects: vec!["blob.read".into()],
-        }
+        test_candidate(digest as u8)
     }
 
     #[test]
@@ -262,4 +297,17 @@ mod tests {
             a.input_sha256 != b.input_sha256 && a.semantics_sha256 != b.semantics_sha256
         }));
     }
+}
+
+#[cfg(test)]
+#[allow(clippy::items_after_test_module)]
+pub(crate) fn test_candidate(seed: u8) -> CandidateContext {
+    CandidateContext::from_material(
+        "candidate-plugin".into(),
+        "1.0.0".into(),
+        vec![seed; 32],
+        format!("{{\"seed\":{seed}}}"),
+        vec!["blob.read".into()],
+        vec!["blob.read".into()],
+    )
 }

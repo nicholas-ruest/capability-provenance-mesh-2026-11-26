@@ -1,0 +1,7 @@
+[package]
+name="cpm-autogenous-candidate"
+version="0.1.0"
+edition="2021"
+[workspace]
+[dependencies]
+agl-types={path="@UPSTREAM@/crates/agl-types"}

@@ -1,8 +1,22 @@
+use crate::CandidateContext;
 use cpm_upstream_runtime::{ProbeKind, UpstreamCommand, UpstreamError, UpstreamReceipt};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use std::path::PathBuf;
+use std::{cell::RefCell, path::PathBuf};
 use thiserror::Error;
+
+thread_local! {
+    static ACTIVE_CANDIDATE: RefCell<Option<CandidateContext>> = const { RefCell::new(None) };
+}
+
+pub(crate) fn with_candidate<T>(candidate: &CandidateContext, run: impl FnOnce() -> T) -> T {
+    ACTIVE_CANDIDATE.with(|slot| {
+        let previous = slot.replace(Some(candidate.clone()));
+        let result = run();
+        slot.replace(previous);
+        result
+    })
+}
 
 #[derive(Debug, Clone)]
 pub struct HarnessBinding {
@@ -27,6 +41,7 @@ struct OperationInput<'a> {
     responsibility: &'a str,
     operation: &'a str,
     semantic_fields: &'a [&'a str],
+    candidate: &'a CandidateContext,
 }
 
 #[derive(Debug, Error)]
@@ -40,6 +55,8 @@ pub enum IntegrationError {
     BindingMismatch,
     #[error("upstream receipt output digest is malformed")]
     OutputDigest,
+    #[error("candidate execution context is missing")]
+    MissingCandidate,
     #[error(transparent)]
     Runtime(#[from] UpstreamError),
 }
@@ -66,10 +83,16 @@ impl HarnessBinding {
         operation: String,
         semantic_fields: &[&str],
     ) -> Result<UpstreamEvidence, IntegrationError> {
+        let candidate = ACTIVE_CANDIDATE.with(|slot| slot.borrow().clone());
+        #[cfg(test)]
+        let candidate = candidate.or_else(|| Some(crate::test_candidate(b't')));
+        let candidate = candidate.ok_or(IntegrationError::MissingCandidate)?;
+        candidate.validate()?;
         let input_payload = serde_json::to_string(&OperationInput {
             responsibility,
             operation: &operation,
             semantic_fields,
+            candidate: &candidate,
         })
         .map_err(|_| IntegrationError::Validation {
             field: "upstream_input",

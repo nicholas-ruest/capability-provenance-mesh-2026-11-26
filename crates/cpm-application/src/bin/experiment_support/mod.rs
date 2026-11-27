@@ -418,14 +418,14 @@ mod tests {
 
     #[test]
     fn evidence_suite_is_source_bound_and_leave_one_out_is_six() {
-        let candidate = CandidateContext {
-            plugin: "fixed-workload-plugin".into(),
-            version: "1.0.0".into(),
-            artifact_sha256: "a".repeat(64),
-            manifest_sha256: "b".repeat(64),
-            declared_capabilities: vec!["blob.read".into()],
-            observed_effects: vec!["blob.read".into()],
-        };
+        let candidate = CandidateContext::from_material(
+            "fixed-workload-plugin".into(),
+            "1.0.0".into(),
+            b"fixed benchmark artifact".to_vec(),
+            r#"{"api_version":"v1","name":"fixed-workload-plugin"}"#.into(),
+            vec!["blob.read".into()],
+            vec!["blob.read".into()],
+        );
         let full = EvidenceSuite::full()
             .execute_all(&candidate, false)
             .unwrap();

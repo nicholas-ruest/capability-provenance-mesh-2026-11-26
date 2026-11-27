@@ -10,5 +10,6 @@ const root=resolve(rootArg),evidence=resolve(evidenceArg),sha=execFileSync("git"
 const report=JSON.parse(readFileSync(resolve(inputArg),"utf8"));
 if(report.schema_version!==2||report.source_sha!==sha)throw new Error("stale execution map");
 const result=validateEvidenceMap(root,evidence,report);
+const f=result.frontier;if(!f||f.benchmark_decisions!==40||f.frontier_decisions!==25||f.component_ablations!==4||f.upstream_ablations!==7||f.balanced_quality_gain_bps!==5000||f.component_quality_delta_bps!==-1250)throw new Error("frontier evidence invariants not proven");
 writeFileSync(resolve(evidence,"composition-report.json"),JSON.stringify(report,null,2)+"\n");
 console.log(JSON.stringify({status:"COMPOSITION_RECORDED",source_sha:sha,...result}));

@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Admission, ApiError, AuditEvent, CapabilityMeshClient, Intake,
   RegistryEntry, Trial, UpstreamEvidence,
@@ -67,7 +67,7 @@ function TrialResult({ trial }: { trial: Trial }) {
 
 export function App({ client: provided }: { client?: CapabilityMeshClient }) {
   const [token, setToken] = useState("cpm-reviewer-token");
-  const client = useMemo(() => provided ?? new CapabilityMeshClient({ token }), [provided]);
+  const client = useMemo(() => provided ?? new CapabilityMeshClient({ token }), [provided, token]);
   useEffect(() => client.setToken(token), [client, token]);
 
   const [view, setView] = useState<View>("admission");
@@ -86,17 +86,17 @@ export function App({ client: provided }: { client?: CapabilityMeshClient }) {
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [auditLoading, setAuditLoading] = useState(false);
 
-  async function loadRegistry() {
+  const loadRegistry = useCallback(async () => {
     setRegistryLoading(true);
     try { setRegistry((await client.getRegistry()).entries); }
     catch { setRegistry([]); }
     finally { setRegistryLoading(false); }
-  }
+  }, [client]);
 
   useEffect(() => {
     void client.ready().then(() => setReady("ready")).catch(() => setReady("offline"));
     void loadRegistry();
-  }, [client]);
+  }, [client, loadRegistry]);
 
   async function runTrial(event: FormEvent) {
     event.preventDefault();

@@ -88,7 +88,7 @@ export function ProductApp({ suppliedClient }: { suppliedClient?: RuntimeClient 
     try {
       const result = await client.submit(submission());
       setRecord(result); setAuditId(result.correlation_id);
-      localStorage.setItem("cpm:last-decision", JSON.stringify({ plugin: result.plugin, version: result.version }));
+      localStorage.setItem("cpm:last-decision", JSON.stringify({ plugin, version }));
       setPhase(result.admitted ? "success" : "denied");
       setMessage(result.admitted ? "Admitted with a source-bound receipt and durable decision." : "Denied with a durable audit and no active authority.");
     } catch (error) { setPhase("error"); setMessage(errorText(error)); }

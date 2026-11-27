@@ -2,6 +2,13 @@
 set -euo pipefail
 root="$(git rev-parse --show-toplevel)"; cd "$root"
 : "${DREAM_MACHINE_EVIDENCE_DIR:?external evidence directory required}"; : "${DREAM_MACHINE_PLAYWRIGHT_ROOT:?external Playwright install required}"; : "${DREAM_MACHINE_UPSTREAM_ROOT:?external upstream root required}"
+upstreams="$DREAM_MACHINE_UPSTREAM_ROOT"
+export CPM_UPSTREAM_HARNESS_ROOT="$root/crates/cpm-service/upstream-harness"
+export CPM_UPSTREAM_SOURCE_ROOT="$upstreams"
+export CPM_SKILLSPECTOR_BIN="$upstreams/.venv-skillspector/bin/skillspector"
+[[ -d "$CPM_UPSTREAM_HARNESS_ROOT" ]] || { echo "missing checked-in upstream harness: $CPM_UPSTREAM_HARNESS_ROOT" >&2; exit 1; }
+[[ -d "$CPM_UPSTREAM_SOURCE_ROOT" ]] || { echo "missing external upstream source root: $CPM_UPSTREAM_SOURCE_ROOT" >&2; exit 1; }
+[[ -x "$CPM_SKILLSPECTOR_BIN" ]] || { echo "missing installed SkillSpector binary: $CPM_SKILLSPECTOR_BIN" >&2; exit 1; }
 : >"$DREAM_MACHINE_EVIDENCE_DIR/correlation-trace.ndjson"
 scripts/start.sh
 trap 'scripts/stop.sh' EXIT

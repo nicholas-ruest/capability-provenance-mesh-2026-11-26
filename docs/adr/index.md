@@ -1,31 +1,29 @@
-# ADR coverage plan
+# Architecture decision records
 
-These are planned decision records, not completed ADRs. Each ADR will be written when its alternatives can be evaluated against running behavior. The final documents must contain context, viable alternatives, decision, tradeoffs, consequences, validation, implementation paths, test paths, and reciprocal crate/DDD mappings.
+These 25 accepted records are implementation contracts with production, failure-test, and exact-source evidence paths.
 
-| ADR | Decision-specific subject | Status |
-| --- | --- | --- |
-| 001 | Modular-monolith composition root versus services | Planned |
-| 002 | Application command/query and background-job boundaries | Planned |
-| 003 | Stable identity, digest, revision, and error contracts | Planned |
-| 004 | Streaming quarantine before any plugin interpretation | Planned |
-| 005 | Versioned manifest and capability vocabulary evolution | Planned |
-| 006 | Frozen Rune plan and artifact-lineage trust contract | Planned |
-| 007 | RVM inspection boundary without execution overclaim | Planned |
-| 008 | Monotonic capability attenuation and budget algebra | Planned |
-| 009 | Host-call observation normalization and source binding | Planned |
-| 010 | WorldGraph projection and transitive effect closure | Planned |
-| 011 | Explainable risk and incomplete-evidence refusal | Planned |
-| 012 | Frozen deterministic scenario-pack identity | Planned |
-| 013 | Wasmtime fuel, memory, epoch, and host-call limits | Planned |
-| 014 | Trial lifecycle, cancellation, retry, and idempotency | Planned |
-| 015 | Human-plus-Cedar admission state machine | Planned |
-| 016 | Counterexample-guided least-capability remediation | Planned |
-| 017 | Canonical receipt and correlation hash chain | Planned |
-| 018 | OpenDAL append-only events, snapshots, and atomic current pointer | Planned |
-| 019 | LatentMesh signed envelope and replay defense | Planned |
-| 020 | APx eligibility separated from security/admission | Planned |
-| 021 | Typed OpenAPI and generated/checked TypeScript client | Planned |
-| 022 | Middleware registration order and no-effect denial | Planned |
-| 023 | SSE trial progress with bounded backpressure | Planned |
-| 024 | Container and Cloud Run-compatible topology without deployment | Planned |
-| 025 | Evidence collector, immutable candidate, and CI artifact binding | Planned |
+- [ADR-001: Production-reachable modular monolith](001.md)
+- [ADR-002: Commands, queries, and persisted jobs](002.md)
+- [ADR-003: Stable domain contracts](003.md)
+- [ADR-004: Quarantine before inspection](004.md)
+- [ADR-005: Monotonic authority attenuation](005.md)
+- [ADR-006: Cosign-bound artifact identity](006.md)
+- [ADR-007: SkillSpector as evidence](007.md)
+- [ADR-008: Deterministic risk with dissent](008.md)
+- [ADR-009: Signed bounded LatentMesh envelopes](009.md)
+- [ADR-010: RuGraph mechanics under domain semantics](010.md)
+- [ADR-011: Incomplete evidence as refusal](011.md)
+- [ADR-012: Frozen benchmark scenarios](012.md)
+- [ADR-013: Agenticow no-effect branches](013.md)
+- [ADR-014: Leased bounded trials](014.md)
+- [ADR-015: Human admission state machine](015.md)
+- [ADR-016: Autogenous repair and rollback](016.md)
+- [ADR-017: Canonical receipts and correlation](017.md)
+- [ADR-018: Append-only audit and atomic pointers](018.md)
+- [ADR-019: Watermark only text provenance](019.md)
+- [ADR-020: Versioned OpenAPI client](020.md)
+- [ADR-021: Ordered no-effect middleware](021.md)
+- [ADR-022: Bounded resumable SSE](022.md)
+- [ADR-023: Rootless compatible topology](023.md)
+- [ADR-024: Exact-clean Rust source floor](024.md)
+- [ADR-025: Governed publication order](025.md)

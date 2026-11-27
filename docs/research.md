@@ -1,38 +1,15 @@
-# Research plan
+# Research and product hypothesis
 
-## Mechanism
+## Hypothesis
 
-Counterexample-guided capability attenuation iterates:
+A causal evidence graph plus monotonic authority attenuation and isolated trials reduces unsafe capability-pack admission without making safe remediation unusable. The benchmark compares full composition with graph, attenuation, quarantine, and provenance ablations over frozen benign, malicious, ambiguous, tampered, and timeout cases.
 
-1. parse declared capability set;
-2. run a frozen scenario pack;
-3. normalize observed host/resource effects;
-4. extend the set by transitive graph reachability;
-5. solve for the smallest capability closure preserving all required tasks;
-6. re-run the repaired manifest;
-7. admit only when the second trace is contained and task acceptance remains above threshold.
+Research screened at least ten Ruvnet and five enterprise candidates. Readiness selected Autogenous, RuGraph, Agenticow, AI Text Watermark, LatentMesh, NVIDIA SkillSpector, and Sigstore Cosign because each supplies a complementary runtime responsibility and substantive failure path. Exact pins, licenses, probe receipts, and history truth live in selection-report schema 1.
 
-## Benchmark corpus
+## Verified examples
 
-At least 60 deterministic plugin fixtures covering exact manifests, overbroad manifests, undeclared host calls, transitive effects, stale lineage, replayed telemetry, resource exhaustion, and task regressions. Held-out mutations are not used to tune rules.
+- Mandate Mesh fa6e7ce708528d2a2a1d466d5524e99da2930323 establishes the full-product shape: multi-crate Rust, React, three journeys, restart retrieval, containers, and semantic evidence.
+- ToolRecall ae214d5141256370664a0ad008cfb57b22f33590 demonstrates source-bound status and truthful publication/Gist blockers.
+- JitterMap 53b400f39adfec140dda2f8ef02c4f5ca4265cb3 demonstrates bounded fail-closed federation and authority-none receipts.
 
-## Baselines
-
-- Manifest-only static admission.
-- Dynamic-trace-only admission.
-- Cedar-only policy admission.
-
-## Metrics
-
-False admission/denial, excess permissions, accepted task rate, p50/p95 latency, peak RSS, evidence bytes, and human corrections.
-
-## Ingredient ablations
-
-- Remove WorldGraph closure.
-- Remove RVM mapping.
-- Remove Rune lineage.
-- Remove LatentMesh signature/replay defense.
-- Remove APx task eligibility.
-- Remove Cedar policy.
-
-Wasmtime and OpenDAL comparisons exercise controlled failure/volatile-state baselines; they do not authorize unsandboxed execution or a durable claim from memory.
+These are independently verified examples, not automatically approved learned policy.

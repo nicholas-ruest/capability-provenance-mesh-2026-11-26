@@ -1,23 +1,7 @@
-# Topology
+# Deployment topology
 
-## Local and CI topology
+One-command launch starts rootless Rust API and frontend containers on one shared data/evidence volume. Upstreams run as bounded child processes; the service owns no private database. Health covers liveness; readiness verifies store, contract, and adapter configuration.
 
-| Process | Responsibility | Planned port/boundary |
-| --- | --- | --- |
-| React/Vite frontend | Admission workbench and generated client | `127.0.0.1:4173` |
-| Rust Axum service | API, middleware, application composition, SSE | `127.0.0.1:8080` |
-| Rust trial worker | Service-owned bounded Wasmtime execution | internal task queue |
-| APx adapter process | Pinned executable scoring boundary if no native API is available | child process, no network |
-| OpenDAL FS service | Local/CI shared-object emulation | mounted authorized data directory |
+The host forbids privileged networking and cannot assume slirp access to /dev/net/tun. Verification uses compatible host or network-none operation with localhost connectivity and no host-policy change. Cloud Run service and rollback manifests are configuration only.
 
-## Container rules
-
-- Rootless images and explicit unprivileged users.
-- Read-only application filesystem except declared data/temp mounts.
-- No privileged mode, host devices, ambient credentials, or unrestricted plugin network.
-- Deterministic health/readiness checks.
-- Full stack start/stop/reset/seed scripts will be implemented with the running slice.
-
-## Cloud Run compatibility
-
-The API and frontend remain stateless relative to the authorized shared-object boundary. Trial jobs use bounded request/job semantics and cancellation. Deployment and rollback files will be supplied later as configuration only; no cloud action is authorized.
+Start, stop, reset, and seed are idempotent. Reset targets only explicit product data. Restart verification retains the shared volume, restarts the backend, and retrieves identical decision/audit hashes through the browser.

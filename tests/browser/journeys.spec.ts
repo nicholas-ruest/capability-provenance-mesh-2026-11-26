@@ -14,7 +14,9 @@ function identity(prefix: string, project: string) {
 
 async function prepare(page: Page, plugin: string, version: string) {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Governed Admission" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Admission", level: 1 }),
+  ).toBeVisible();
   await page.getByLabel("Plugin name").fill(plugin);
   await page.getByLabel("Version").fill(version);
 }

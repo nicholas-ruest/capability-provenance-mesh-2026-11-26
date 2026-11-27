@@ -7,6 +7,7 @@ export default defineConfig({
   testMatch: "journeys.spec.ts",
   fullyParallel: false,
   retries: 0,
+  workers: 1,
   timeout: 90_000,
   expect: { timeout: 15_000 },
   reporter: [["json", { outputFile: "test-results/results.json" }], ["line"]],

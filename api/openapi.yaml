@@ -1,0 +1,35 @@
+openapi: 3.1.0
+info:
+  title: Capability Provenance Mesh API
+  version: 1.0.0
+paths:
+  /api/v1/intakes:
+    post:
+      operationId: createIntake
+      security: [{bearerAuth: []}]
+      responses:
+        "200": {description: Admission decision}
+        "401": {description: Authentication required}
+        "403": {description: Authorization or policy denied}
+        "422": {description: Validated application refusal}
+  /api/v1/registry/{plugin}/{version}:
+    get:
+      operationId: getRegistryEntry
+      parameters:
+        - {name: plugin, in: path, required: true, schema: {type: string}}
+        - {name: version, in: path, required: true, schema: {type: string}}
+      responses:
+        "200": {description: Durable registry entry}
+        "404": {description: Entry absent}
+  /api/v1/audit/{correlation}:
+    get:
+      operationId: getAudit
+      parameters:
+        - {name: correlation, in: path, required: true, schema: {type: string}}
+      responses:
+        "200": {description: Correlated audit record}
+  /healthz: {get: {responses: {"200": {description: Healthy}}}}
+  /readyz: {get: {responses: {"200": {description: Ready}}}}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer}

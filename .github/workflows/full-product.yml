@@ -32,6 +32,10 @@ jobs:
           npm install --prefix "$DREAM_MACHINE_PLAYWRIGHT_ROOT" --no-save @playwright/test@1.56.1
           "$DREAM_MACHINE_PLAYWRIGHT_ROOT/node_modules/.bin/playwright" install --with-deps chromium
       - run: node scripts/dream-machine-gate-bundle.mjs .
+      - name: Verify governed publisher without network
+        run: |
+          tests/publication/publisher-route.test.sh
+          tests/publication/negative-control.sh
       - name: Separate Rust source floor
         run: node scripts/dream-machine-rust-share.mjs .
       - name: Independent semantic review required

@@ -1,7 +1,71 @@
 //! Admitted version activation and revocation registry.
-use std::collections::BTreeMap;use thiserror::Error;
-#[derive(Debug,Clone,PartialEq,Eq)]pub struct Entry{pub plugin:String,pub version:String,pub receipt:String,pub revoked:bool}
-#[derive(Debug,Error,PartialEq,Eq)]pub enum RegistryError{#[error("decision denied")]Denied,#[error("version already exists")]Conflict,#[error("version missing")]Missing}
-#[derive(Debug,Default)]pub struct Registry{entries:BTreeMap<(String,String),Entry>}
-impl Registry{pub fn activate(&mut self,entry:Entry,admitted:bool)->Result<(),RegistryError>{if !admitted{return Err(RegistryError::Denied)}let k=(entry.plugin.clone(),entry.version.clone());if self.entries.contains_key(&k){return Err(RegistryError::Conflict)}self.entries.insert(k,entry);Ok(())}pub fn get(&self,p:&str,v:&str)->Result<&Entry,RegistryError>{self.entries.get(&(p.into(),v.into())).ok_or(RegistryError::Missing)}pub fn revoke(&mut self,p:&str,v:&str)->Result<(),RegistryError>{self.entries.get_mut(&(p.into(),v.into())).ok_or(RegistryError::Missing).map(|e|e.revoked=true)}}
-#[cfg(test)]mod tests{use super::*;fn e()->Entry{Entry{plugin:"p".into(),version:"1".into(),receipt:"r".into(),revoked:false}}#[test]fn activates(){let mut r=Registry::default();r.activate(e(),true).unwrap();assert!(!r.get("p","1").unwrap().revoked)}#[test]fn denied_has_no_effect(){let mut r=Registry::default();assert_eq!(r.activate(e(),false),Err(RegistryError::Denied));assert_eq!(r.get("p","1"),Err(RegistryError::Missing))}}
+use std::collections::BTreeMap;
+use thiserror::Error;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Entry {
+    pub plugin: String,
+    pub version: String,
+    pub receipt: String,
+    pub revoked: bool,
+}
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum RegistryError {
+    #[error("decision denied")]
+    Denied,
+    #[error("version already exists")]
+    Conflict,
+    #[error("version missing")]
+    Missing,
+}
+#[derive(Debug, Default)]
+pub struct Registry {
+    entries: BTreeMap<(String, String), Entry>,
+}
+impl Registry {
+    pub fn activate(&mut self, entry: Entry, admitted: bool) -> Result<(), RegistryError> {
+        if !admitted {
+            return Err(RegistryError::Denied);
+        }
+        let k = (entry.plugin.clone(), entry.version.clone());
+        if self.entries.contains_key(&k) {
+            return Err(RegistryError::Conflict);
+        }
+        self.entries.insert(k, entry);
+        Ok(())
+    }
+    pub fn get(&self, p: &str, v: &str) -> Result<&Entry, RegistryError> {
+        self.entries
+            .get(&(p.into(), v.into()))
+            .ok_or(RegistryError::Missing)
+    }
+    pub fn revoke(&mut self, p: &str, v: &str) -> Result<(), RegistryError> {
+        self.entries
+            .get_mut(&(p.into(), v.into()))
+            .ok_or(RegistryError::Missing)
+            .map(|e| e.revoked = true)
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn e() -> Entry {
+        Entry {
+            plugin: "p".into(),
+            version: "1".into(),
+            receipt: "r".into(),
+            revoked: false,
+        }
+    }
+    #[test]
+    fn activates() {
+        let mut r = Registry::default();
+        r.activate(e(), true).unwrap();
+        assert!(!r.get("p", "1").unwrap().revoked)
+    }
+    #[test]
+    fn denied_has_no_effect() {
+        let mut r = Registry::default();
+        assert_eq!(r.activate(e(), false), Err(RegistryError::Denied));
+        assert_eq!(r.get("p", "1"), Err(RegistryError::Missing))
+    }
+}

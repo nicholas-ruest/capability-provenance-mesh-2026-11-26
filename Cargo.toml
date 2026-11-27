@@ -7,6 +7,7 @@ license = "Apache-2.0 OR MIT"
 rust-version = "1.100"
 [workspace.dependencies]
 cpm-contracts = { path = "crates/cpm-contracts" }
+cpm-upstream-runtime = { path = "crates/cpm-upstream-runtime" }
 serde = { version = "1.0.228", features = ["derive"] }
 sha2 = "0.10.9"
 thiserror = "2.0.17"

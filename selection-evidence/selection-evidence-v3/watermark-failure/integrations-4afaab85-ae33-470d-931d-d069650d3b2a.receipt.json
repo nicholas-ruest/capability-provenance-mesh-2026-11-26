@@ -1,0 +1,18 @@
+{
+  "schema_version": 2,
+  "suite": "integrations",
+  "source_sha": "4106f742712cb8886d82d586892c9663071d4527",
+  "argv": [
+    "bash",
+    "scripts/watermark-failure.sh",
+    "/home/ruv/.local/state/dream-machine/runs/e4167056-ce98-832f-b1c9-92740e1d9d99"
+  ],
+  "started_at": "2026-11-27T03:12:36.101Z",
+  "ended_at": "2026-11-27T03:12:36.159Z",
+  "exit_code": 0,
+  "signal": null,
+  "error": null,
+  "integrity_error": null,
+  "log": "integrations-4afaab85-ae33-470d-931d-d069650d3b2a.log",
+  "log_sha256": "19563fe257920128422010d770597749d6d44f6849aafc8e5921414c0666f821"
+}

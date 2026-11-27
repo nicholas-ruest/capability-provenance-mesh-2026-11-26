@@ -9,14 +9,20 @@ services:
       CPM_API_PORT: "8080"
       CPM_DATA_DIR: /var/lib/cpm
       CPM_TEMP_DIR: /tmp/cpm
+      CPM_UPSTREAM_SOURCE_ROOT: ${DREAM_MACHINE_UPSTREAM_ROOT:?external pinned upstream root required}
+      CPM_SKILLSPECTOR_BIN: ${DREAM_MACHINE_UPSTREAM_ROOT:?}/.venv-skillspector/bin/skillspector
+      CONTAINER_HOST: unix:///run/podman/podman.sock
       RUST_LOG: ${RUST_LOG:-info}
     ports: ["127.0.0.1:8080:8080"]
     read_only: true
-    user: "65532:65532"
+    user: "0:0"
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     tmpfs: ["/tmp:rw,noexec,nosuid,size=128m"]
-    volumes: ["cpm-data:/var/lib/cpm:rw"]
+    volumes:
+      - cpm-data:/var/lib/cpm:rw
+      - ${DREAM_MACHINE_UPSTREAM_ROOT:?}:${DREAM_MACHINE_UPSTREAM_ROOT:?}:ro
+      - ${XDG_RUNTIME_DIR:?}/podman/podman.sock:/run/podman/podman.sock
     healthcheck:
       test: ["CMD", "/usr/local/bin/readiness", "http://127.0.0.1:8080/readyz"]
       interval: 5s

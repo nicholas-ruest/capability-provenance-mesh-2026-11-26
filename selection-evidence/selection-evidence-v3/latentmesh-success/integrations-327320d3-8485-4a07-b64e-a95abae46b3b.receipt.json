@@ -1,0 +1,18 @@
+{
+  "schema_version": 2,
+  "suite": "integrations",
+  "source_sha": "4106f742712cb8886d82d586892c9663071d4527",
+  "argv": [
+    "bash",
+    "scripts/latentmesh-success.sh",
+    "/home/ruv/.local/state/dream-machine/runs/e4167056-ce98-832f-b1c9-92740e1d9d99"
+  ],
+  "started_at": "2026-11-27T03:12:36.689Z",
+  "ended_at": "2026-11-27T03:12:36.830Z",
+  "exit_code": 0,
+  "signal": null,
+  "error": null,
+  "integrity_error": null,
+  "log": "integrations-327320d3-8485-4a07-b64e-a95abae46b3b.log",
+  "log_sha256": "04e7bf1711e31ecc2e20d9494125467628a402eef9392400a9521596a23dc61e"
+}

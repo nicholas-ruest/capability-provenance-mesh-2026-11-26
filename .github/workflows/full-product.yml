@@ -7,27 +7,35 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 240
     env:
       PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+      DREAM_MACHINE_PLAYWRIGHT_ROOT: ${{ runner.temp }}/playwright
+      DREAM_MACHINE_UPSTREAM_ROOT: ${{ runner.temp }}/upstreams
       DREAM_MACHINE_PRODUCER_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
       DREAM_MACHINE_SELECTION_REPORT: ${{ github.workspace }}/selection-evidence/selection-report.json
-      DREAM_MACHINE_EXECUTION_MAP: ${{ runner.temp }}/evidence/execution-map.json
+      DREAM_MACHINE_SELECTION_EVIDENCE: ${{ github.workspace }}/selection-evidence
       DREAM_MACHINE_EVIDENCE_DIR: ${{ runner.temp }}/evidence
+      DREAM_MACHINE_SEMANTIC_REVIEW: ${{ github.workspace }}/selection-evidence/semantic-review.md
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
       - uses: dtolnay/rust-toolchain@stable
-        with: {toolchain: "1.91", components: rustfmt,clippy}
+        with: {toolchain: "1.100.0", components: rustfmt,clippy}
       - uses: actions/setup-node@v4
         with: {node-version: "24.11.1", cache: npm, cache-dependency-path: frontend/package-lock.json}
       - uses: taiki-e/install-action@v2
         with: {tool: cargo-deny}
-      - run: sudo apt-get update && sudo apt-get install -y podman podman-compose
-      - run: npm --prefix frontend ci && npx --prefix frontend playwright install --with-deps chromium
+      - run: sudo apt-get update && sudo apt-get install -y podman podman-compose python3-venv
+      - name: Install locked browser runner outside checkout
+        run: |
+          npm install --prefix "$DREAM_MACHINE_PLAYWRIGHT_ROOT" --no-save @playwright/test@1.56.1
+          "$DREAM_MACHINE_PLAYWRIGHT_ROOT/node_modules/.bin/playwright" install --with-deps chromium
       - run: node scripts/dream-machine-gate-bundle.mjs .
       - name: Separate Rust source floor
         run: node scripts/dream-machine-rust-share.mjs .
+      - name: Independent semantic review required
+        run: test -s "$DREAM_MACHINE_SEMANTIC_REVIEW"
       - name: Produce source-bound evidence
         run: scripts/verify-prototype.sh
       - name: Exact-head publication controller check

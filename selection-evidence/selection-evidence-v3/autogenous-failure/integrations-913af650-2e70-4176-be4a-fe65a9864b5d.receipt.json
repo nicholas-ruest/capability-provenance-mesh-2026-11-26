@@ -1,0 +1,18 @@
+{
+  "schema_version": 2,
+  "suite": "integrations",
+  "source_sha": "4106f742712cb8886d82d586892c9663071d4527",
+  "argv": [
+    "bash",
+    "scripts/autogenous-failure.sh",
+    "/home/ruv/.local/state/dream-machine/runs/e4167056-ce98-832f-b1c9-92740e1d9d99"
+  ],
+  "started_at": "2026-11-27T03:12:32.225Z",
+  "ended_at": "2026-11-27T03:12:32.283Z",
+  "exit_code": 0,
+  "signal": null,
+  "error": null,
+  "integrity_error": null,
+  "log": "integrations-913af650-2e70-4176-be4a-fe65a9864b5d.log",
+  "log_sha256": "f8d108b0e7ec9c972a582b49c976e635a042a4e64aa10ee04add4be6864af588"
+}

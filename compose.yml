@@ -13,7 +13,7 @@ services:
       CPM_SKILLSPECTOR_BIN: ${DREAM_MACHINE_UPSTREAM_ROOT:?}/.venv-skillspector/bin/skillspector
       CONTAINER_HOST: unix:///run/podman/podman.sock
       RUST_LOG: ${RUST_LOG:-info}
-    ports: ["127.0.0.1:8080:8080"]
+    ports: ["127.0.0.1:${CPM_CONTAINER_API_PORT:-18081}:8080"]
     read_only: true
     user: "0:0"
     cap_drop: [ALL]
@@ -32,7 +32,7 @@ services:
     build:
       context: .
       dockerfile: containers/frontend.Containerfile
-    ports: ["127.0.0.1:4173:8080"]
+    ports: ["127.0.0.1:${CPM_CONTAINER_FRONTEND_PORT:-4174}:8080"]
     read_only: true
     user: "101:101"
     cap_drop: [ALL]

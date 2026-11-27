@@ -62,11 +62,16 @@ jobs:
       - name: Produce source-bound evidence
         run: scripts/verify-prototype.sh
       - name: Exact-head publication controller check
-        run: node scripts/dream-machine-publication-gate.mjs --check . "$DREAM_MACHINE_EVIDENCE_DIR"
+        run: |
+          controller_evidence=/tmp/dream-machine-controller-evidence
+          test ! -e "$controller_evidence"
+          DREAM_MACHINE_EVIDENCE_DIR="$controller_evidence" node scripts/dream-machine-publication-gate.mjs --check . "$controller_evidence"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: capability-provenance-evidence-${{ github.event.pull_request.head.sha || github.sha }}
-          path: /tmp/dream-machine-evidence
+          path: |
+            /tmp/dream-machine-evidence
+            /tmp/dream-machine-controller-evidence
           if-no-files-found: error
           retention-days: 30

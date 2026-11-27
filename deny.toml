@@ -1,0 +1,55 @@
+# Supply-chain policy for the locked Capability Provenance Mesh workspace.
+# Keep this list narrow: every license below is required by the current graph.
+
+[graph]
+all-features = true
+
+[advisories]
+# No advisories, yanked releases, or unmaintained warnings are suppressed.
+ignore = []
+
+[licenses]
+# MIT and Apache-2.0 cover the majority of the Rust ecosystem dependencies.
+# matchit requires both MIT and BSD-3-Clause. unicode-ident requires
+# Unicode-3.0 in addition to either MIT or Apache-2.0.
+allow = [
+  "Apache-2.0",
+  "BSD-3-Clause",
+  "MIT",
+  "Unicode-3.0",
+]
+confidence-threshold = 0.8
+exceptions = []
+
+[licenses.private]
+ignore = false
+registries = []
+
+[bans]
+# Duplicate versions remain visible as warnings and may not be skipped.
+# Cargo-deny classifies versionless internal workspace path dependencies as
+# wildcards. They remain allowed because Cargo.lock and local paths bind them;
+# external wildcard resolution is absent from this locked graph.
+multiple-versions = "warn"
+wildcards = "allow"
+highlight = "all"
+workspace-default-features = "allow"
+external-default-features = "allow"
+allow = []
+allow-workspace = false
+deny = []
+skip = []
+skip-tree = []
+
+[sources]
+# The standard crates.io registry is the only permitted dependency source.
+# Any additional registry or Git dependency fails verification.
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
+
+[sources.allow-org]
+github = []
+gitlab = []
+bitbucket = []

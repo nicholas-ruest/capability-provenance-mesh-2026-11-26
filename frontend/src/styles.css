@@ -188,6 +188,14 @@ input:focus, textarea:focus, select:focus, button:focus-visible {
   aside {
     position: static; height: auto; padding: 12px 15px; border-right: 0; border-bottom: 1px solid var(--line);
     display: grid; grid-template-columns: auto 1fr; gap: 12px;
+.record-data { margin: 18px 0 0; }
+.record-data > div { display: grid; grid-template-columns: 130px 1fr; gap: 10px; padding: 5px 0; }
+.record-data dt { color: var(--muted); font-size: .7rem; }
+.record-data dd { overflow: hidden; margin: 0; font: .7rem monospace; text-overflow: ellipsis; }
+.denial-proof { padding: 44px 24px; border: 1px solid #71384a; border-radius: 12px; background: #291722; text-align: center; }
+.denial-proof strong { color: #ff9daf; }
+.denial-proof p { color: var(--muted); }
+.space-top { margin-top: 15px; }
   }
   .brand { justify-content: start; }
   .brand > div { display: block; }

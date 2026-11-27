@@ -35,7 +35,48 @@ pub use skillspector::{
 pub use watermark::{WATERMARK_REPOSITORY, WATERMARK_REVISION, WatermarkAdapter, WatermarkProbe};
 
 use cpm_upstream_runtime::ProbeKind;
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CandidateContext {
+    pub plugin: String,
+    pub version: String,
+    pub artifact_sha256: String,
+    pub manifest_sha256: String,
+    pub declared_capabilities: Vec<String>,
+    pub observed_effects: Vec<String>,
+}
+
+impl CandidateContext {
+    pub fn validate(&self) -> Result<(), IntegrationError> {
+        common::validate_identifier("plugin", &self.plugin)?;
+        common::validate_identifier("version", &self.version)?;
+        common::validate_sha256(&self.artifact_sha256)?;
+        common::validate_sha256(&self.manifest_sha256)?;
+        if self.declared_capabilities.is_empty() || self.observed_effects.is_empty() {
+            return Err(IntegrationError::Validation {
+                field: "candidate_evidence",
+                reason: "capabilities and observed effects must be non-empty",
+            });
+        }
+        for value in self
+            .declared_capabilities
+            .iter()
+            .chain(self.observed_effects.iter())
+        {
+            common::validate_identifier("capability_or_effect", value)?;
+        }
+        Ok(())
+    }
+
+    #[must_use]
+    pub fn binding_sha256(&self) -> String {
+        let bytes = serde_json::to_vec(self).expect("candidate context serialization");
+        format!("{:x}", Sha256::digest(bytes))
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct UpstreamSet {
@@ -85,57 +126,67 @@ impl UpstreamSet {
 
     pub fn execute_all(
         &self,
+        candidate: &CandidateContext,
         denial_probe: bool,
     ) -> Result<Vec<UpstreamEvidence>, IntegrationError> {
+        candidate.validate()?;
         let kind = if denial_probe {
             ProbeKind::Failure
         } else {
             ProbeKind::Success
         };
-        let placeholder_sha = "a".repeat(64);
+        let first_effect = candidate.observed_effects[0].clone();
         let evidence = vec![
             self.autogenous.execute(
                 kind,
                 &AutogenesisRequest {
-                    objective: "derive least-authority plugin plan".into(),
-                    max_cycles: 8,
+                    objective: format!(
+                        "derive least-authority plan for {}@{} artifact {}",
+                        candidate.plugin, candidate.version, candidate.artifact_sha256
+                    ),
+                    max_cycles: u16::try_from(candidate.declared_capabilities.len() + 4)
+                        .unwrap_or(256),
                 },
             )?,
             self.rugraph.execute(
                 kind,
                 &GraphQuery {
-                    source_node: "manifest".into(),
-                    target_node: "observed-effect".into(),
+                    source_node: format!("manifest:{}.{}", candidate.plugin, candidate.version),
+                    target_node: format!(
+                        "effect:{first_effect}:{}",
+                        &candidate.artifact_sha256[..12]
+                    ),
                     max_depth: 12,
                 },
             )?,
             self.agenticow.execute(
                 kind,
                 &ToolContract {
-                    tool_name: "sandbox-probe".into(),
-                    schema_sha256: placeholder_sha.clone(),
-                    expected_effects: 1,
+                    tool_name: candidate.plugin.clone(),
+                    schema_sha256: candidate.manifest_sha256.clone(),
+                    expected_effects: u16::try_from(candidate.observed_effects.len())
+                        .unwrap_or(u16::MAX),
                 },
             )?,
             self.watermark.execute(
                 kind,
                 &WatermarkProbe {
-                    text_sha256: placeholder_sha.clone(),
+                    text_sha256: candidate.artifact_sha256.clone(),
                     minimum_score_basis_points: 7_500,
                 },
             )?,
             self.latentmesh.execute(
                 kind,
                 &MeshEnvelope {
-                    topic: "capability.provenance".into(),
-                    payload_sha256: placeholder_sha.clone(),
+                    topic: format!("capability.provenance.{}", candidate.plugin),
+                    payload_sha256: candidate.manifest_sha256.clone(),
                     hop_limit: 4,
                 },
             )?,
             self.skillspector.execute(
                 kind,
                 &SkillInspection {
-                    artifact_sha256: placeholder_sha.clone(),
+                    artifact_sha256: candidate.artifact_sha256.clone(),
                     policy_profile: "cpm-admission-v1".into(),
                     max_findings: 128,
                 },
@@ -143,9 +194,9 @@ impl UpstreamSet {
             self.cosign.execute(
                 kind,
                 &SignatureVerification {
-                    artifact_sha256: placeholder_sha,
+                    artifact_sha256: candidate.artifact_sha256.clone(),
                     issuer: "https://issuer.example".into(),
-                    subject: "builder@example.test".into(),
+                    subject: format!("{}@{}", candidate.plugin, candidate.version),
                 },
             )?,
         ];
@@ -179,5 +230,36 @@ mod tests {
             7
         );
         assert!(bindings.iter().all(|(_, revision)| revision.len() == 40));
+    }
+
+    fn candidate(digest: char) -> CandidateContext {
+        CandidateContext {
+            plugin: "candidate-plugin".into(),
+            version: "1.0.0".into(),
+            artifact_sha256: digest.to_string().repeat(64),
+            manifest_sha256: digest.to_string().repeat(64),
+            declared_capabilities: vec!["blob.read".into()],
+            observed_effects: vec!["blob.read".into()],
+        }
+    }
+
+    #[test]
+    fn every_upstream_receipt_is_candidate_bound() {
+        let command = || Some(PathBuf::from("/bin/true"));
+        let set = UpstreamSet {
+            autogenous: AutogenesisAdapter::new(command(), command(), None),
+            rugraph: RuGraphAdapter::new(command(), command(), None),
+            agenticow: AgentToolAdapter::new(command(), command(), None),
+            watermark: WatermarkAdapter::new(command(), command(), None),
+            latentmesh: LatentMeshAdapter::new(command(), command(), None),
+            skillspector: SkillSpectorAdapter::new(command(), command(), None),
+            cosign: CosignAdapter::new(command(), command(), None),
+        };
+        let first = set.execute_all(&candidate('a'), false).unwrap();
+        let second = set.execute_all(&candidate('b'), false).unwrap();
+        assert_eq!(first.len(), 7);
+        assert!(first.iter().zip(second.iter()).all(|(a, b)| {
+            a.input_sha256 != b.input_sha256 && a.semantics_sha256 != b.semantics_sha256
+        }));
     }
 }

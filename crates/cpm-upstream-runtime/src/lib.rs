@@ -19,6 +19,7 @@ pub struct UpstreamReceipt {
     pub repository: &'static str,
     pub revision: &'static str,
     pub output_sha256: String,
+    pub input_sha256: String,
 }
 #[derive(Debug, Error)]
 pub enum UpstreamError {
@@ -54,7 +55,11 @@ impl UpstreamCommand {
             argument,
         }
     }
-    pub fn execute(&self, kind: ProbeKind) -> Result<UpstreamReceipt, UpstreamError> {
+    pub fn execute(
+        &self,
+        kind: ProbeKind,
+        input_payload: &str,
+    ) -> Result<UpstreamReceipt, UpstreamError> {
         let path = match kind {
             ProbeKind::Success => &self.success,
             ProbeKind::Failure => &self.failure,
@@ -65,6 +70,9 @@ impl UpstreamCommand {
         if let Some(argument) = &self.argument {
             command.arg(argument);
         }
+        let input_sha256 = format!("{:x}", Sha256::digest(input_payload.as_bytes()));
+        command.env("CPM_UPSTREAM_INPUT", input_payload);
+        command.env("CPM_UPSTREAM_INPUT_SHA256", &input_sha256);
         let output = command.output().map_err(UpstreamError::Launch)?;
         if !output.status.success() {
             return Err(UpstreamError::Exit(output.status.code()));
@@ -75,6 +83,7 @@ impl UpstreamCommand {
             repository: self.repository,
             revision: self.revision,
             output_sha256: format!("{:x}", Sha256::digest(bytes)),
+            input_sha256,
         })
     }
 }
@@ -84,7 +93,8 @@ mod tests {
     #[test]
     fn refuses_unconfigured() {
         assert!(matches!(
-            UpstreamCommand::new("o/r", "v", None, None, None).execute(ProbeKind::Success),
+            UpstreamCommand::new("o/r", "v", None, None, None)
+                .execute(ProbeKind::Success, "candidate"),
             Err(UpstreamError::Unconfigured)
         ))
     }
@@ -93,7 +103,7 @@ mod tests {
     fn executes() {
         assert_eq!(
             UpstreamCommand::new("o/r", "v", Some("/bin/true".into()), None, None)
-                .execute(ProbeKind::Success)
+                .execute(ProbeKind::Success, "candidate")
                 .unwrap()
                 .revision,
             "v"

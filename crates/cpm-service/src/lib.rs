@@ -74,18 +74,23 @@ impl RealSuite {
     }
 }
 impl UpstreamSuite for RealSuite {
-    fn execute_all(&self, denial_probe: bool) -> Result<Vec<String>, String> {
+    fn execute_all(
+        &self,
+        candidate: &cpm_upstreams::CandidateContext,
+        denial_probe: bool,
+    ) -> Result<Vec<String>, String> {
         self.integrations
-            .execute_all(denial_probe)
+            .execute_all(candidate, denial_probe)
             .map(|evidence| {
                 evidence
                     .into_iter()
                     .map(|item| {
                         format!(
-                            "{}@{}:{}:{}:{}",
+                            "{}@{}:{}:{}:{}:{}",
                             item.repository,
                             item.revision,
                             item.responsibility,
+                            item.input_sha256,
                             item.output_sha256,
                             item.semantics_sha256
                         )

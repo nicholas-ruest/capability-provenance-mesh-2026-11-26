@@ -23,7 +23,9 @@ use cpm_risk::RiskScore;
 use cpm_scenarios::ScenarioPack;
 use cpm_store::{DecisionRecord, DirectoryStore, StoreError};
 use cpm_trial_state::TrialState;
+use cpm_upstreams::CandidateContext;
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::sync::Arc;
 use thiserror::Error;
 use uuid::Uuid;
@@ -70,7 +72,11 @@ pub enum ApplicationError {
     Store(#[from] StoreError),
 }
 pub trait UpstreamSuite: Send + Sync {
-    fn execute_all(&self, denial_probe: bool) -> Result<Vec<String>, String>;
+    fn execute_all(
+        &self,
+        candidate: &CandidateContext,
+        denial_probe: bool,
+    ) -> Result<Vec<String>, String>;
 }
 #[derive(Clone)]
 pub struct Application<U> {
@@ -150,9 +156,24 @@ impl<U: UpstreamSuite> Application<U> {
         let state = TrialState::Queued
             .transition(TrialState::Running)
             .map_err(|_| ApplicationError::Trial)?;
+        let mut manifest_hasher = Sha256::new();
+        manifest_hasher.update(request.manifest.api_version.as_bytes());
+        manifest_hasher.update(request.manifest.name.as_bytes());
+        manifest_hasher.update(request.manifest.entrypoint.as_bytes());
+        for capability in &request.manifest.capabilities {
+            manifest_hasher.update(capability.as_bytes());
+        }
+        let candidate = CandidateContext {
+            plugin: request.plugin.clone(),
+            version: request.version.clone(),
+            artifact_sha256: digest.clone(),
+            manifest_sha256: format!("{:x}", manifest_hasher.finalize()),
+            declared_capabilities: declared.values(),
+            observed_effects: observed.values(),
+        };
         let upstreams = self
             .upstreams
-            .execute_all(request.denial_probe)
+            .execute_all(&candidate, request.denial_probe)
             .map_err(ApplicationError::Upstream)?;
         let _terminal = state
             .transition(if risk.acceptable() {
@@ -220,7 +241,7 @@ mod tests {
     #[derive(Clone)]
     struct Seven;
     impl UpstreamSuite for Seven {
-        fn execute_all(&self, _: bool) -> Result<Vec<String>, String> {
+        fn execute_all(&self, _: &CandidateContext, _: bool) -> Result<Vec<String>, String> {
             Ok((0..7).map(|i| format!("u{i}")).collect())
         }
     }
@@ -259,6 +280,28 @@ mod tests {
             Err(ApplicationError::Store(StoreError::Missing))
         ));
         assert!(!app.audit(&r.correlation_id).unwrap().admitted);
+        let _ = std::fs::remove_dir_all(d);
+    }
+
+    #[derive(Clone)]
+    struct BrokenUpstream;
+    impl UpstreamSuite for BrokenUpstream {
+        fn execute_all(&self, _: &CandidateContext, _: bool) -> Result<Vec<String>, String> {
+            Err("substantive upstream operation failed".into())
+        }
+    }
+
+    #[test]
+    fn upstream_failure_prevents_all_durable_writes() {
+        let d = std::env::temp_dir().join(format!("cpm-upstream-fail-{}", Uuid::new_v4()));
+        let app = Application::new(DirectoryStore::open(&d).unwrap(), BrokenUpstream, 1024);
+        assert!(matches!(
+            app.submit(req(false)),
+            Err(ApplicationError::Upstream(_))
+        ));
+        for collection in ["decisions", "audit", "active"] {
+            assert_eq!(std::fs::read_dir(d.join(collection)).unwrap().count(), 0);
+        }
         let _ = std::fs::remove_dir_all(d);
     }
 }

@@ -5,9 +5,9 @@ use cpm_manifest::{Manifest, VERSION};
 use cpm_store::DirectoryStore;
 use cpm_upstreams::{
     AGENTICOW_REPOSITORY, AGENTICOW_REVISION, AUTOGENOUS_REPOSITORY, AUTOGENOUS_REVISION,
-    COSIGN_REPOSITORY, COSIGN_REVISION, LATENTMESH_REPOSITORY, LATENTMESH_REVISION,
-    RUGRAPH_REPOSITORY, RUGRAPH_REVISION, SKILLSPECTOR_REPOSITORY, SKILLSPECTOR_REVISION,
-    WATERMARK_REPOSITORY, WATERMARK_REVISION,
+    COSIGN_REPOSITORY, COSIGN_REVISION, CandidateContext, LATENTMESH_REPOSITORY,
+    LATENTMESH_REVISION, RUGRAPH_REPOSITORY, RUGRAPH_REVISION, SKILLSPECTOR_REPOSITORY,
+    SKILLSPECTOR_REVISION, WATERMARK_REPOSITORY, WATERMARK_REVISION,
 };
 use serde::Serialize;
 use std::{collections::BTreeSet, fs, path::Path, time::SystemTime};
@@ -104,11 +104,21 @@ impl EvidenceSuite {
 }
 
 impl UpstreamSuite for EvidenceSuite {
-    fn execute_all(&self, denial: bool) -> Result<Vec<String>, String> {
+    fn execute_all(
+        &self,
+        candidate: &CandidateContext,
+        denial: bool,
+    ) -> Result<Vec<String>, String> {
         Ok(Ingredient::ALL
             .into_iter()
             .filter(|ingredient| self.omitted != Some(*ingredient))
-            .map(|ingredient| ingredient.receipt(denial))
+            .map(|ingredient| {
+                format!(
+                    "{}:{}",
+                    ingredient.receipt(denial),
+                    candidate.binding_sha256()
+                )
+            })
             .collect())
     }
 }
@@ -162,12 +172,22 @@ mod tests {
 
     #[test]
     fn evidence_suite_is_source_bound_and_leave_one_out_is_six() {
-        let full = EvidenceSuite::full().execute_all(false).unwrap();
+        let candidate = CandidateContext {
+            plugin: "fixed-workload-plugin".into(),
+            version: "1.0.0".into(),
+            artifact_sha256: "a".repeat(64),
+            manifest_sha256: "b".repeat(64),
+            declared_capabilities: vec!["blob.read".into()],
+            observed_effects: vec!["blob.read".into()],
+        };
+        let full = EvidenceSuite::full()
+            .execute_all(&candidate, false)
+            .unwrap();
         assert_eq!(full.len(), 7);
         assert!(full.iter().all(|receipt| receipt.contains('@')));
         assert_eq!(
             EvidenceSuite::without(Ingredient::Cosign)
-                .execute_all(false)
+                .execute_all(&candidate, false)
                 .unwrap()
                 .len(),
             6

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+source "$(dirname "$0")/candidate-context.sh"
+cpm_bind_candidate skillspector
 r=$1; p="$r/NVIDIA_SkillSpector"; o=$(mktemp); scanner=${CPM_SKILLSPECTOR_BIN:-$r/.venv-skillspector/bin/skillspector}
 test "$(git -C "$p" rev-parse HEAD)" = 48e0f942ea1f5fdb7aa096a6f65a0adeda2ecc4e
 "$scanner" scan "$p/tests/fixtures/safe_skill" --no-llm --format json --output "$o"

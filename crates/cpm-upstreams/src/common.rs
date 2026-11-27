@@ -1,4 +1,5 @@
 use cpm_upstream_runtime::{ProbeKind, UpstreamCommand, UpstreamError, UpstreamReceipt};
+use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 use thiserror::Error;
@@ -16,8 +17,16 @@ pub struct UpstreamEvidence {
     pub revision: &'static str,
     pub responsibility: &'static str,
     pub operation: String,
+    pub input_sha256: String,
     pub output_sha256: String,
     pub semantics_sha256: String,
+}
+
+#[derive(Serialize)]
+struct OperationInput<'a> {
+    responsibility: &'a str,
+    operation: &'a str,
+    semantic_fields: &'a [&'a str],
 }
 
 #[derive(Debug, Error)]
@@ -57,9 +66,19 @@ impl HarnessBinding {
         operation: String,
         semantic_fields: &[&str],
     ) -> Result<UpstreamEvidence, IntegrationError> {
-        let receipt = self.command.execute(kind)?;
+        let input_payload = serde_json::to_string(&OperationInput {
+            responsibility,
+            operation: &operation,
+            semantic_fields,
+        })
+        .map_err(|_| IntegrationError::Validation {
+            field: "upstream_input",
+            reason: "must serialize to canonical JSON",
+        })?;
+        let receipt = self.command.execute(kind, &input_payload)?;
         self.validate_receipt(&receipt)?;
         let mut hasher = Sha256::new();
+        hash_field(&mut hasher, self.revision);
         hash_field(&mut hasher, responsibility);
         hash_field(&mut hasher, &operation);
         hash_field(
@@ -72,12 +91,14 @@ impl HarnessBinding {
         for field in semantic_fields {
             hash_field(&mut hasher, field);
         }
+        hash_field(&mut hasher, &receipt.input_sha256);
         hash_field(&mut hasher, &receipt.output_sha256);
         Ok(UpstreamEvidence {
             repository: self.repository,
             revision: self.revision,
             responsibility,
             operation,
+            input_sha256: receipt.input_sha256,
             output_sha256: receipt.output_sha256,
             semantics_sha256: format!("{:x}", hasher.finalize()),
         })
@@ -87,7 +108,8 @@ impl HarnessBinding {
         if receipt.repository != self.repository || receipt.revision != self.revision {
             return Err(IntegrationError::BindingMismatch);
         }
-        validate_sha256(&receipt.output_sha256).map_err(|_| IntegrationError::OutputDigest)
+        validate_sha256(&receipt.output_sha256).map_err(|_| IntegrationError::OutputDigest)?;
+        validate_sha256(&receipt.input_sha256).map_err(|_| IntegrationError::OutputDigest)
     }
 }
 

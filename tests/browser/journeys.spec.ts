@@ -17,8 +17,8 @@ async function prepare(page: Page, plugin: string, version: string) {
   await expect(
     page.getByRole("heading", { name: "Admission", level: 1 }),
   ).toBeVisible();
-  await page.getByLabel("Plugin name").fill(plugin);
-  await page.getByLabel("Version").fill(version);
+  await page.getByLabel("Plugin name", { exact: true }).fill(plugin);
+  await page.getByLabel("Version", { exact: true }).fill(version);
 }
 
 async function admit(page: Page) {
@@ -71,13 +71,13 @@ test("saved result and audit survive refresh and backend restart", async ({ page
   execFileSync(restart, [], { stdio: "inherit", timeout: 60_000 });
 
   await page.getByRole("button", { name: /Durable Registry/ }).click();
-  await page.getByLabel("Plugin").fill(id.plugin);
-  await page.getByLabel("Version").fill(id.version);
+  await page.getByLabel("Plugin", { exact: true }).fill(id.plugin);
+  await page.getByLabel("Version", { exact: true }).fill(id.version);
   await page.getByRole("button", { name: "Retrieve from registry" }).click();
   await expect(page.getByTestId("decision-receipt")).toContainText(correlation);
 
   await page.getByRole("button", { name: /Audit Replay/ }).click();
-  await page.getByLabel("Correlation ID").fill(correlation);
+  await page.getByLabel("Correlation ID", { exact: true }).fill(correlation);
   await page.getByRole("button", { name: "Replay audit" }).click();
   await expect(page.getByTestId("decision-receipt")).toContainText(correlation);
   await saveViewport(page, "durable-replay", testInfo.project.name, testInfo);

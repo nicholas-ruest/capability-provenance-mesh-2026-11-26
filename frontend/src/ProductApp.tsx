@@ -95,24 +95,25 @@ export function ProductApp({ suppliedClient }: { suppliedClient?: RuntimeClient 
   }
 
   async function denialProbe() {
-    setPhase("loading"); setMessage("Proving policy denial occurs before dispatch or durable mutation...");
+    setPhase("loading"); setMessage("Executing a denied decision, then proving no registry mutation...");
     setRecord(null); setDenialVerified(false);
     try {
-      await client.submit(submission(true), "deny");
-      setPhase("error"); setMessage("Denial probe unexpectedly reached the application.");
-    } catch (error) {
-      if (!(error instanceof ApiError) || error.status !== 403) {
-        setPhase("error"); setMessage(errorText(error)); return;
+      const denied = await client.submit(submission(true));
+      if (denied.admitted) {
+        setPhase("error"); setMessage("Denial probe unexpectedly admitted the capability."); return;
       }
+      setAuditId(denied.correlation_id);
       try {
         await client.getDecision(plugin, version);
         setPhase("error"); setMessage("Forbidden side effect detected: a denied revision exists.");
       } catch (lookup) {
         if (lookup instanceof ApiError && lookup.status === 404) {
           setDenialVerified(true); setPhase("denied");
-          setMessage("Policy denied before effects; registry lookup confirms no downstream mutation.");
+          setMessage("Denied decision produced no registry entry; the 404 confirms no downstream mutation.");
         } else { setPhase("error"); setMessage(errorText(lookup)); }
       }
+    } catch (error) {
+      setPhase("error"); setMessage(errorText(error));
     }
   }
 
@@ -157,7 +158,7 @@ export function ProductApp({ suppliedClient }: { suppliedClient?: RuntimeClient 
           </form>
         </section>
         <section className="panel"><header className="panel-head"><div><p className="eyebrow">02 / Outcome</p><h2>Observed authority</h2></div>{record && <span className="pill good">{record.admitted ? "admitted" : "denied"}</span>}</header>
-          {record ? <RecordView record={record} /> : denialVerified ? <div className="denial-proof" data-testid="denial-proof"><strong>No forbidden downstream effect</strong><p>403 policy denial followed by a 404 registry lookup.</p><button className="primary" onClick={() => { setPhase("idle"); setMessage("Recovered. Submit the corrected capability."); }}>Recover and continue</button></div> : <Empty title="Evidence closes here">Submit a manifest to exercise the real browser-to-Rust-to-upstream-to-storage composition.</Empty>}
+          {record ? <RecordView record={record} /> : denialVerified ? <div className="denial-proof" data-testid="denial-proof"><strong>No forbidden downstream effect</strong><p>Denied decision followed by a 404 registry lookup.</p><button className="primary" onClick={() => { setPhase("idle"); setMessage("Recovered. Submit the corrected capability."); }}>Recover and continue</button></div> : <Empty title="Evidence closes here">Submit a manifest to exercise the real browser-to-Rust-to-upstream-to-storage composition.</Empty>}
         </section>
       </div>}
 

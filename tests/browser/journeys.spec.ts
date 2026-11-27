@@ -47,7 +47,7 @@ test("policy denial proves no effect and recovers", async ({ page }, testInfo) =
   await page.getByRole("button", { name: "Run policy-denial probe" }).click();
   const proof = page.getByTestId("denial-proof");
   await expect(proof).toContainText("No forbidden downstream effect");
-  await expect(proof).toContainText("403 policy denial followed by a 404 registry lookup");
+  await expect(proof).toContainText("Denied decision followed by a 404 registry lookup");
   await saveViewport(page, "denial-proof", testInfo.project.name, testInfo);
   await page.getByRole("button", { name: "Recover and continue" }).click();
   await expect(page.getByRole("status")).toContainText("Recovered");

@@ -54,7 +54,8 @@ export class RuntimeClient {
 
   constructor(options: RuntimeClientOptions = {}) {
     this.baseUrl = (options.baseUrl ?? "").replace(/\/$/, "");
-    this.fetcher = options.fetcher ?? fetch;
+    this.fetcher =
+      options.fetcher ?? ((input, init) => globalThis.fetch(input, init));
     this.token = options.token ?? "";
   }
 

@@ -87,12 +87,14 @@ remote_main="$(remote_ref main)"
 remote_feature="$(remote_ref "$feature_branch")"
 [[ -z "$remote_main" || "$remote_main" == "$base_sha" ]] ||
   deny 'remote main is not the substantive source foundation'
-[[ -z "$remote_feature" || "$remote_feature" == "$head_sha" ]] ||
-  deny 'remote candidate branch differs from the controller-bound source'
+if [[ -n "$remote_feature" && "$remote_feature" != "$head_sha" ]]; then
+  git merge-base --is-ancestor "$remote_feature" "$head_sha" ||
+    deny 'remote candidate branch is not an ancestor of the repaired candidate'
+fi
 
 refspecs=()
 [[ -n "$remote_main" ]] || refspecs+=("$base_sha:refs/heads/main")
-[[ -n "$remote_feature" ]] || refspecs+=("$head_sha:refs/heads/$feature_branch")
+[[ "$remote_feature" == "$head_sha" ]] || refspecs+=("$head_sha:refs/heads/$feature_branch")
 if (( ${#refspecs[@]} )); then
   git push --atomic --porcelain "$remote_url" "${refspecs[@]}"
 fi

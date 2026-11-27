@@ -11,5 +11,6 @@ pin NVIDIA/SkillSpector NVIDIA_SkillSpector 48e0f942ea1f5fdb7aa096a6f65a0adeda2e
 pin sigstore/cosign sigstore_cosign 252f10a80ba871152a12e5ee324ad1e02c85d079
 cargo +1.100.0 build --manifest-path "$root/ruvnet_ruGraph/crates/ruvector-language/Cargo.toml" --locked --bin rvg-core
 python3 -m venv "$root/.venv-skillspector"
+npm --prefix "$root/ruvnet_agenticow" ci --no-audit --no-fund
 "$root/.venv-skillspector/bin/pip" install -q -e "$root/NVIDIA_SkillSpector"
 printf "UPSTREAMS_READY root=%s skillspector=%s\n" "$root" "$root/.venv-skillspector/bin/skillspector"

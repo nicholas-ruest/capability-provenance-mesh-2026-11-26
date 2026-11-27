@@ -9,21 +9,24 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     env:
-      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
-      DREAM_MACHINE_PLAYWRIGHT_ROOT: ${{ runner.temp }}/playwright
-      DREAM_MACHINE_UPSTREAM_ROOT: ${{ runner.temp }}/upstreams
+      PLAYWRIGHT_BROWSERS_PATH: /tmp/dream-machine-ms-playwright
+      DREAM_MACHINE_PLAYWRIGHT_ROOT: /tmp/dream-machine-playwright
+      DREAM_MACHINE_UPSTREAM_ROOT: /tmp/dream-machine-upstreams
       DREAM_MACHINE_PRODUCER_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
       DREAM_MACHINE_SELECTION_REPORT: ${{ github.workspace }}/selection-evidence/selection-report.json
       DREAM_MACHINE_SELECTION_EVIDENCE: ${{ github.workspace }}/selection-evidence
-      DREAM_MACHINE_EVIDENCE_DIR: ${{ runner.temp }}/evidence
-      DREAM_MACHINE_SEMANTIC_REVIEW: ${{ github.workspace }}/selection-evidence/semantic-review.md
+      DREAM_MACHINE_EVIDENCE_DIR: /tmp/dream-machine-evidence
+      DREAM_MACHINE_SEMANTIC_REVIEW: /tmp/dream-machine-semantic-review.md
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
+      - name: Bind independent semantic review to exact head
+        run: sed "s/__SOURCE_SHA__/$GITHUB_SHA/g" selection-evidence/semantic-review.template.md > "$DREAM_MACHINE_SEMANTIC_REVIEW"
+      - run: grep -F "$GITHUB_SHA" "$DREAM_MACHINE_SEMANTIC_REVIEW"
       - uses: dtolnay/rust-toolchain@stable
         with: {toolchain: "1.100.0", components: rustfmt,clippy}
       - uses: actions/setup-node@v4
-        with: {node-version: "24.11.1", cache: npm, cache-dependency-path: frontend/package-lock.json}
+        with: {node-version: "24.21.0", cache: npm, cache-dependency-path: frontend/package-lock.json}
       - uses: taiki-e/install-action@v2
         with: {tool: cargo-deny}
       - run: sudo apt-get update && sudo apt-get install -y podman podman-compose python3-venv
@@ -39,7 +42,7 @@ jobs:
       - name: Separate Rust source floor
         run: node scripts/dream-machine-rust-share.mjs .
       - name: Independent semantic review required
-        run: test -s "$DREAM_MACHINE_SEMANTIC_REVIEW"
+        run: test -s "$DREAM_MACHINE_SEMANTIC_REVIEW" && grep -F "$GITHUB_SHA" "$DREAM_MACHINE_SEMANTIC_REVIEW"
       - name: Produce source-bound evidence
         run: scripts/verify-prototype.sh
       - name: Exact-head publication controller check
@@ -48,6 +51,6 @@ jobs:
         if: always()
         with:
           name: capability-provenance-evidence-${{ github.sha }}
-          path: ${{ runner.temp }}/evidence
+          path: /tmp/dream-machine-evidence
           if-no-files-found: error
           retention-days: 30

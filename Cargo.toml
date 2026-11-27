@@ -1,0 +1,16 @@
+[workspace]
+resolver = "2"
+members = ["crates/cpm-contracts"]
+
+[workspace.package]
+edition = "2024"
+license = "Apache-2.0 OR MIT"
+rust-version = "1.100"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+all = "deny"
+pedantic = "warn"

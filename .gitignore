@@ -1,0 +1,12 @@
+/target/
+/node_modules/
+/dist/
+/playwright-report/
+/test-results/
+/evidence-runtime/
+/.env
+/.env.*
+!.env.example
+*.tsbuildinfo
+*.log
+.DS_Store

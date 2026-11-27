@@ -24,7 +24,6 @@ use std::{
     time::Duration,
 };
 use tokio::time::timeout;
-use tower::ServiceBuilder;
 use tracing::info_span;
 use uuid::Uuid;
 #[derive(Debug, Serialize)]
@@ -111,19 +110,61 @@ impl AppState {
         })
     }
 }
+const MIDDLEWARE_ORDER: &str =
+    "correlation,observability,authn,authz,policy,validation,timeout,error";
+#[derive(Clone, Copy)]
+struct GovernanceConfig {
+    request_timeout: Duration,
+}
+impl Default for GovernanceConfig {
+    fn default() -> Self {
+        Self {
+            request_timeout: Duration::from_secs(10),
+        }
+    }
+}
 pub fn router(state: AppState) -> Router {
+    router_with_config(state, GovernanceConfig::default())
+}
+fn router_with_config(state: AppState, config: GovernanceConfig) -> Router {
     let protected = Router::new()
         .route("/api/v1/intakes", post(create_intake))
         .route("/api/v1/registry/{plugin}/{version}", get(get_registry))
         .route("/api/v1/audit/{correlation}", get(get_audit))
-        .layer(ServiceBuilder::new().layer(middleware::from_fn(governance)));
+        .layer(middleware::from_fn_with_state(config, governance));
     Router::new()
         .route("/healthz", get(|| async { StatusCode::OK }))
         .route("/readyz", get(|| async { StatusCode::OK }))
         .merge(protected)
         .with_state(state)
 }
-async fn governance(mut request: Request, next: Next) -> Response {
+fn finalize_response(
+    mut response: Response,
+    correlation: &str,
+    observation: &'static str,
+) -> Response {
+    if let Ok(value) = HeaderValue::from_str(correlation) {
+        response.headers_mut().insert("x-correlation-id", value);
+    }
+    response.headers_mut().insert(
+        "x-cpm-middleware-order",
+        HeaderValue::from_static(MIDDLEWARE_ORDER),
+    );
+    response
+        .headers_mut()
+        .insert("x-cpm-observation", HeaderValue::from_static(observation));
+    tracing::info!(
+        correlation_id = correlation,
+        outcome = observation,
+        "governance_complete"
+    );
+    response
+}
+async fn governance(
+    State(config): State<GovernanceConfig>,
+    mut request: Request,
+    next: Next,
+) -> Response {
     let correlation = request
         .headers()
         .get("x-correlation-id")
@@ -132,18 +173,20 @@ async fn governance(mut request: Request, next: Next) -> Response {
         .map_or_else(|| Uuid::new_v4().to_string(), ToOwned::to_owned);
     let span = info_span!("http_request",correlation_id=%correlation);
     let _guard = span.enter();
-    if request
+    let authenticated = request
         .headers()
         .get(header::AUTHORIZATION)
-        .and_then(|v| v.to_str().ok())
-        .is_none_or(|v| !v.starts_with("Bearer "))
-    {
-        return error(
+        .and_then(|value| value.to_str().ok())
+        .and_then(|value| value.strip_prefix("Bearer "))
+        .is_some_and(|token| !token.trim().is_empty());
+    if !authenticated {
+        let response = error(
             StatusCode::UNAUTHORIZED,
             "authn_required",
             "valid bearer token required",
-            correlation,
+            correlation.clone(),
         );
+        return finalize_response(response, &correlation, "authn_denied");
     }
     if request
         .headers()
@@ -151,58 +194,54 @@ async fn governance(mut request: Request, next: Next) -> Response {
         .and_then(|v| v.to_str().ok())
         .is_none_or(|v| !matches!(v, "reviewer" | "admin"))
     {
-        return error(
+        let response = error(
             StatusCode::FORBIDDEN,
             "authz_denied",
             "reviewer role required",
-            correlation,
+            correlation.clone(),
         );
+        return finalize_response(response, &correlation, "authz_denied");
     }
     if request
         .headers()
         .get("x-cpm-policy")
         .is_some_and(|v| v == "deny")
     {
-        return error(
+        let response = error(
             StatusCode::FORBIDDEN,
             "policy_denied",
             "policy denied before effects",
-            correlation,
+            correlation.clone(),
         );
+        return finalize_response(response, &correlation, "policy_denied");
     }
     if request.method() == axum::http::Method::POST
         && request
             .headers()
             .get(header::CONTENT_TYPE)
-            .is_none_or(|v| v != "application/json")
+            .and_then(|value| value.to_str().ok())
+            .and_then(|value| value.split(';').next())
+            .is_none_or(|value| value.trim() != "application/json")
     {
-        return error(
+        let response = error(
             StatusCode::UNSUPPORTED_MEDIA_TYPE,
             "validation_failed",
             "application/json required",
-            correlation,
+            correlation.clone(),
         );
+        return finalize_response(response, &correlation, "validation_denied");
     }
     request.extensions_mut().insert(correlation.clone());
-    match timeout(Duration::from_secs(10), next.run(request)).await {
-        Ok(mut response) => {
-            if let Ok(value) = HeaderValue::from_str(&correlation) {
-                response.headers_mut().insert("x-correlation-id", value);
-            }
-            response.headers_mut().insert(
-                "x-cpm-middleware-order",
-                HeaderValue::from_static(
-                    "correlation,observability,error,timeout,authn,validation,authz,policy",
-                ),
-            );
-            response
-        }
-        Err(_) => error(
+    if let Ok(response) = timeout(config.request_timeout, next.run(request)).await {
+        finalize_response(response, &correlation, "completed")
+    } else {
+        let response = error(
             StatusCode::REQUEST_TIMEOUT,
             "timeout",
             "request deadline exceeded",
-            correlation,
-        ),
+            correlation.clone(),
+        );
+        finalize_response(response, &correlation, "timeout")
     }
 }
 async fn create_intake(
@@ -258,6 +297,8 @@ fn map_app_error(error_value: &ApplicationError, correlation: String) -> Respons
         correlation,
     )
 }
+#[cfg(test)]
+mod middleware_matrix_tests;
 #[cfg(test)]
 mod tests {
     use super::*;

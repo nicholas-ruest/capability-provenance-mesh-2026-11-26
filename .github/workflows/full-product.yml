@@ -60,10 +60,7 @@ jobs:
       - name: Independent semantic review required
         run: source_sha="$(git rev-parse HEAD)"; test -s "$DREAM_MACHINE_SEMANTIC_REVIEW" && grep -F "$source_sha" "$DREAM_MACHINE_SEMANTIC_REVIEW"
       - name: Produce source-bound evidence
-        run: |
-          mkdir -p "$DREAM_MACHINE_EVIDENCE_DIR"
-          cp -al "$DREAM_MACHINE_UPSTREAM_ROOT" "$DREAM_MACHINE_EVIDENCE_DIR/probes"
-          scripts/verify-prototype.sh
+        run: scripts/verify-prototype.sh
       - name: Exact-head publication controller check
         run: node scripts/dream-machine-publication-gate.mjs --check . "$DREAM_MACHINE_EVIDENCE_DIR"
       - uses: actions/upload-artifact@v4

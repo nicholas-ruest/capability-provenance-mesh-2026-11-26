@@ -12,6 +12,9 @@ record(){ node scripts/dream-machine-product-gate.mjs record . "$evidence" "$1" 
 record rust bash scripts/run-suite.sh rust
 record backend cargo metadata --locked --offline --format-version 1
 for suite in frontend api middleware integrations benchmark ablations containers browser; do record "$suite" bash scripts/run-suite.sh "$suite"; done
+probe_source="$DREAM_MACHINE_SELECTION_EVIDENCE/probes"
+[[ -d "$probe_source" && ! -e "$evidence/probes" ]] || { echo "fresh source-bound selection probes required" >&2; exit 1; }
+cp -a --no-preserve=ownership "$probe_source" "$evidence/probes"
 cp "$DREAM_MACHINE_SELECTION_REPORT" "$evidence/selection-report.json"
 [[ -s "${DREAM_MACHINE_SEMANTIC_REVIEW:-}" ]] || { echo "independent semantic review required" >&2; exit 1; }
 cp "$DREAM_MACHINE_SEMANTIC_REVIEW" "$evidence/semantic-review.md"

@@ -12,9 +12,12 @@ record(){ node scripts/dream-machine-product-gate.mjs record . "$evidence" "$1" 
 record rust bash scripts/run-suite.sh rust
 record backend cargo metadata --locked --offline --format-version 1
 for suite in frontend api middleware integrations benchmark ablations containers browser; do record "$suite" bash scripts/run-suite.sh "$suite"; done
-probe_source="$DREAM_MACHINE_SELECTION_EVIDENCE/probes"
-[[ -d "$probe_source" && ! -e "$evidence/probes" ]] || { echo "fresh source-bound selection probes required" >&2; exit 1; }
-cp -a --no-preserve=ownership "$probe_source" "$evidence/probes"
+selection_source="$DREAM_MACHINE_SELECTION_EVIDENCE"
+[[ -d "$selection_source/probes" && -d "$selection_source/selection-evidence-v3" && ! -e "$evidence/probes" && ! -e "$evidence/selection-evidence-v3" ]] || { echo "fresh source-bound selection evidence required" >&2; exit 1; }
+cp -a --no-preserve=ownership "$selection_source/probes" "$evidence/probes"
+cp -a --no-preserve=ownership "$selection_source/selection-evidence-v3" "$evidence/selection-evidence-v3"
+compgen -G "$selection_source/integrations-*.log" >/dev/null || { echo "selection integration logs required" >&2; exit 1; }
+cp "$selection_source"/integrations-*.log "$evidence/"
 cp "$DREAM_MACHINE_SELECTION_REPORT" "$evidence/selection-report.json"
 [[ -s "${DREAM_MACHINE_SEMANTIC_REVIEW:-}" ]] || { echo "independent semantic review required" >&2; exit 1; }
 cp "$DREAM_MACHINE_SEMANTIC_REVIEW" "$evidence/semantic-review.md"

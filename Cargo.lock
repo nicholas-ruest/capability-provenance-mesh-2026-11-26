@@ -116,13 +116,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cpm-agenticow"
-version = "0.1.0"
-dependencies = [
- "cpm-upstream-runtime",
-]
-
-[[package]]
 name = "cpm-application"
 version = "0.1.0"
 dependencies = [
@@ -142,7 +135,9 @@ dependencies = [
  "cpm-scenarios",
  "cpm-store",
  "cpm-trial-state",
+ "cpm-upstreams",
  "serde",
+ "serde_json",
  "sha2",
  "thiserror",
  "uuid",
@@ -157,13 +152,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cpm-autogenous"
-version = "0.1.0"
-dependencies = [
- "cpm-upstream-runtime",
-]
-
-[[package]]
 name = "cpm-capability-model"
 version = "0.1.0"
 dependencies = [
@@ -175,24 +163,10 @@ name = "cpm-contracts"
 version = "0.1.0"
 
 [[package]]
-name = "cpm-cosign"
-version = "0.1.0"
-dependencies = [
- "cpm-upstream-runtime",
-]
-
-[[package]]
 name = "cpm-effect-graph"
 version = "0.1.0"
 dependencies = [
  "thiserror",
-]
-
-[[package]]
-name = "cpm-latentmesh"
-version = "0.1.0"
-dependencies = [
- "cpm-upstream-runtime",
 ]
 
 [[package]]
@@ -254,13 +228,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cpm-rugraph"
-version = "0.1.0"
-dependencies = [
- "cpm-upstream-runtime",
-]
-
-[[package]]
 name = "cpm-scenarios"
 version = "0.1.0"
 dependencies = [
@@ -273,16 +240,9 @@ name = "cpm-service"
 version = "0.1.0"
 dependencies = [
  "axum",
- "cpm-agenticow",
  "cpm-application",
- "cpm-autogenous",
- "cpm-cosign",
- "cpm-latentmesh",
- "cpm-rugraph",
- "cpm-skillspector",
  "cpm-store",
- "cpm-upstream-runtime",
- "cpm-watermark",
+ "cpm-upstreams",
  "serde",
  "serde_json",
  "tokio",
@@ -290,13 +250,6 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "uuid",
-]
-
-[[package]]
-name = "cpm-skillspector"
-version = "0.1.0"
-dependencies = [
- "cpm-upstream-runtime",
 ]
 
 [[package]]
@@ -324,10 +277,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "cpm-watermark"
+name = "cpm-upstreams"
 version = "0.1.0"
 dependencies = [
  "cpm-upstream-runtime",
+ "sha2",
+ "thiserror",
 ]
 
 [[package]]

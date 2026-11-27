@@ -15,13 +15,6 @@ serde_json.workspace=true
 uuid.workspace=true
 cpm-application.workspace=true
 cpm-store.workspace=true
-cpm-upstream-runtime.workspace=true
-cpm-autogenous.workspace=true
-cpm-rugraph.workspace=true
-cpm-agenticow.workspace=true
-cpm-watermark.workspace=true
-cpm-latentmesh.workspace=true
-cpm-skillspector.workspace=true
-cpm-cosign.workspace=true
+cpm-upstreams.workspace=true
 [lints]
 workspace=true

@@ -32,13 +32,7 @@ cpm-admission = { path = "crates/cpm-admission" }
 cpm-remediation = { path = "crates/cpm-remediation" }
 cpm-receipts = { path = "crates/cpm-receipts" }
 cpm-registry = { path = "crates/cpm-registry" }
-cpm-autogenous = { path = "crates/cpm-autogenous" }
-cpm-rugraph = { path = "crates/cpm-rugraph" }
-cpm-agenticow = { path = "crates/cpm-agenticow" }
-cpm-watermark = { path = "crates/cpm-watermark" }
-cpm-latentmesh = { path = "crates/cpm-latentmesh" }
-cpm-skillspector = { path = "crates/cpm-skillspector" }
-cpm-cosign = { path = "crates/cpm-cosign" }
+cpm-upstreams = { path = "crates/cpm-upstreams" }
 cpm-store = { path = "crates/cpm-store" }
 cpm-application = { path = "crates/cpm-application" }
 [workspace.lints.rust]

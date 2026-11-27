@@ -16,7 +16,7 @@ use axum::{
 };
 use cpm_application::{Application, ApplicationError, IntakeRequest, UpstreamSuite};
 use cpm_store::{DecisionRecord, DirectoryStore};
-use cpm_upstream_runtime::ProbeKind;
+use cpm_upstreams::UpstreamSet;
 use serde::Serialize;
 use std::{
     path::{Path as FsPath, PathBuf},
@@ -51,13 +51,7 @@ fn error(
 }
 #[derive(Clone)]
 pub struct RealSuite {
-    autogenous: cpm_autogenous::Adapter,
-    rugraph: cpm_rugraph::Adapter,
-    agenticow: cpm_agenticow::Adapter,
-    watermark: cpm_watermark::Adapter,
-    latentmesh: cpm_latentmesh::Adapter,
-    skillspector: cpm_skillspector::Adapter,
-    cosign: cpm_cosign::Adapter,
+    integrations: UpstreamSet,
 }
 impl RealSuite {
     #[must_use]
@@ -75,61 +69,31 @@ impl RealSuite {
                     .and_then(FsPath::parent)
                     .map(FsPath::to_path_buf)
             });
-        let pair = |success: &str, failure: &str| {
-            (
-                Some(root.join(success)),
-                Some(root.join(failure)),
-                source_root.clone(),
-            )
-        };
-        let (a, b, argument) = pair("autogenous-success.sh", "autogenous-failure.sh");
-        let autogenous = cpm_autogenous::Adapter::new(a, b, argument);
-        let (a, b, argument) = pair("rugraph-success.sh", "rugraph-failure.sh");
-        let rugraph = cpm_rugraph::Adapter::new(a, b, argument);
-        let (a, b, argument) = pair("agenticow-success.sh", "agenticow-failure.sh");
-        let agenticow = cpm_agenticow::Adapter::new(a, b, argument);
-        let (a, b, argument) = pair("watermark-success.sh", "watermark-failure.sh");
-        let watermark = cpm_watermark::Adapter::new(a, b, argument);
-        let (a, b, argument) = pair("latentmesh-success.sh", "latentmesh-failure.sh");
-        let latentmesh = cpm_latentmesh::Adapter::new(a, b, argument);
-        let (a, b, argument) = pair("skillspector-success.sh", "skillspector-failure.sh");
-        let skillspector = cpm_skillspector::Adapter::new(a, b, argument);
-        let (a, b, argument) = pair("cosign-success.sh", "cosign-failure.sh");
-        let cosign = cpm_cosign::Adapter::new(a, b, argument);
         Self {
-            autogenous,
-            rugraph,
-            agenticow,
-            watermark,
-            latentmesh,
-            skillspector,
-            cosign,
+            integrations: UpstreamSet::from_harness_root(root, source_root),
         }
     }
 }
 impl UpstreamSuite for RealSuite {
     fn execute_all(&self, denial_probe: bool) -> Result<Vec<String>, String> {
-        let kind = if denial_probe {
-            ProbeKind::Failure
-        } else {
-            ProbeKind::Success
-        };
-        let receipts = [
-            self.autogenous.execute(kind),
-            self.rugraph.execute(kind),
-            self.agenticow.execute(kind),
-            self.watermark.execute(kind),
-            self.latentmesh.execute(kind),
-            self.skillspector.execute(kind),
-            self.cosign.execute(kind),
-        ];
-        receipts
-            .into_iter()
-            .map(|r| {
-                r.map(|x| format!("{}@{}:{}", x.repository, x.revision, x.output_sha256))
-                    .map_err(|e| e.to_string())
+        self.integrations
+            .execute_all(denial_probe)
+            .map(|evidence| {
+                evidence
+                    .into_iter()
+                    .map(|item| {
+                        format!(
+                            "{}@{}:{}:{}:{}",
+                            item.repository,
+                            item.revision,
+                            item.responsibility,
+                            item.output_sha256,
+                            item.semantics_sha256
+                        )
+                    })
+                    .collect()
             })
-            .collect()
+            .map_err(|error| error.to_string())
     }
 }
 #[derive(Clone)]

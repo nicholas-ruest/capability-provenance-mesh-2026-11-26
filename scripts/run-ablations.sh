@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
-root="$(git rev-parse --show-toplevel)"; cd "$root"
-upstreams="${DREAM_MACHINE_UPSTREAM_ROOT:?external upstream root required}"
-evidence="${DREAM_MACHINE_EVIDENCE_DIR:?external evidence directory required}"
-harness="$root/crates/cpm-service/upstream-harness"; out="$evidence/ablation-results.ndjson"; : >"$out"
-cargo test --locked -p cpm-application tests::denial_never_admits -- --exact
-export CPM_SKILLSPECTOR_BIN="$upstreams/.venv-skillspector/bin/skillspector"
-for project in autogenous rugraph agenticow watermark latentmesh skillspector cosign; do
-  log="$evidence/ablation-$project.log"
-  if "$harness/$project-failure.sh" "$upstreams" >"$log" 2>&1; then status=passed; else status=failed; fi
-  printf '{"ingredient":"%s","asserted_failure_path":"%s","status":"%s"}\n' "$project" "$project-failure.sh" "$status" >>"$out"
-  [[ "$status" == passed ]] || { cat "$log" >&2; exit 1; }
-done
+root="$(git rev-parse --show-toplevel)"
+cd "$root"
+out="${DREAM_MACHINE_EVIDENCE_DIR:?external evidence directory required}/ablation-results.json"
+cargo run --locked --offline -p cpm-application --bin ablation >"$out"
+node - "$out" <<'NODE'
+const report = JSON.parse(require('node:fs').readFileSync(process.argv[2], 'utf8'));
+if (report.schema_version !== 2 || report.assertion_passed !== true) process.exit(1);
+if (report.leave_one_out.length !== 7) process.exit(1);
+if (!report.leave_one_out.every(row => row.admission === 'blocked' && row.remaining_receipts === 6 && row.forbidden_active_writes === 0 && row.durable_active_writes === 0 && row.assertion_passed === true)) process.exit(1);
+if (!report.full_mechanism.safe_admitted || !report.full_mechanism.denial_blocked || report.full_mechanism.forbidden_active_writes !== 0) process.exit(1);
+NODE
 cat "$out"

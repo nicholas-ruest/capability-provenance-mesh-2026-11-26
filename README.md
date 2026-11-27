@@ -4,6 +4,8 @@
 
 Capability Provenance Mesh is a security workbench for teams that must decide whether a third-party agent capability may run. It turns a submitted bundle into an evidence graph, evaluates authority and reversibility, quarantines effects, produces a signed admission receipt, and preserves restart-durable audit and replay.
 
+Its unusual capability is **Evidence-Closed Capability Admission (ECCA)**: the same candidate identity must survive inspection, evidence closure, policy evaluation, quarantine, signed promotion, and restart-durable replay. A denial is useful evidence only when it also proves that no registry effect occurred.
+
 > Execution status is evidence-driven. This README does not claim a passing build until exact-head CI publishes the source-bound evidence artifact.
 
 ## Product surface
@@ -14,6 +16,17 @@ Capability Provenance Mesh is a security workbench for teams that must decide wh
 - **Attestation and audit:** sign admitted artifacts and retrieve the decision after refresh and backend restart.
 - **Operator UI:** responsive React/TypeScript intake, evidence-graph, repair, replay, registry, and audit views.
 - **Rust composition:** versioned Axum API, ordered middleware, application services, background work, and durable shared-storage boundaries.
+
+## Frontier Research and Open Source Foundations
+
+ECCA turns upstream security tools into one candidate-bound admission proof rather than a decorative dependency list. The [strategic novelty record](docs/strategic-novelty.md) contains the weighted concept decision, last-10 taxonomy, dated census, mechanism invariants, and measured boundary.
+
+| Foundation | Immutable source and license | Executed product responsibility and call path | Evidence and interest |
+|---|---|---|---|
+| **NVIDIA SkillSpector (marquee OSS)** | [48e0f942ea1f5fdb7aa096a6f65a0adeda2ecc4e](https://github.com/NVIDIA/SkillSpector/tree/48e0f942ea1f5fdb7aa096a6f65a0adeda2ecc4e), Apache-2.0 | Inspect submitted skills for severity and remediation through [the typed adapter](crates/cpm-upstreams/src/skillspector.rs), [production composition](crates/cpm-upstreams/src/lib.rs), and [success/failure harnesses](crates/cpm-service/upstream-harness/) | [Success receipt](selection-evidence/selection-evidence-v3/skillspector-success/integrations-f0bf7ff3-0c20-4baf-809d-b8e21d510248.receipt.json) and [failure receipt](selection-evidence/selection-evidence-v3/skillspector-failure/integrations-1309caf5-2976-49d7-b4a5-1c418b17777c.receipt.json). It is interesting because static skill-security findings become candidate-bound admission evidence. |
+| **Sigstore Cosign (complementary second-organization OSS)** | [252f10a80ba871152a12e5ee324ad1e02c85d079](https://github.com/sigstore/cosign/tree/252f10a80ba871152a12e5ee324ad1e02c85d079), Apache-2.0 | Sign and verify admitted artifact identity, including tamper rejection, through [the typed adapter](crates/cpm-upstreams/src/cosign.rs), [production composition](crates/cpm-upstreams/src/lib.rs), and [success/failure harnesses](crates/cpm-service/upstream-harness/) | [Success receipt](selection-evidence/selection-evidence-v3/cosign-success/integrations-ab152e22-b66e-4d03-972f-165db5202b50.receipt.json) and [failure receipt](selection-evidence/selection-evidence-v3/cosign-failure/integrations-61342e12-4e43-48cf-81dd-fa3f5b184d4d.receipt.json). It complements inspection by binding the promoted revision to a verifiable signature. |
+
+SkillSpector and Cosign come from distinct organizations and serve different responsibilities: inspect before admission, then attest the exact promoted artifact. Their inclusion, names, and trademarks do not imply endorsement, sponsorship, or affiliation by NVIDIA, Sigstore, or their contributors. Runtime claims remain subject to exact-head evidence.
 
 ## One-command local launch
 

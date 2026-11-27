@@ -10,6 +10,7 @@
 | executable middleware | [ADR-019](adr/019.md) | [service](../crates/cpm-service/src/lib.rs), [failure matrix](../crates/cpm-service/src/middleware_matrix_tests.rs) | authn/authz/policy/validation/error/correlation/timeout/order with effect-free denials |
 | authoritative typed API | [ADR-020](adr/020.md) | [OpenAPI](../api/openapi.yaml), [negative drift](../tests/api/contract-drift.test.sh) | API suite receipt |
 | three browser journeys | [ADR-021](adr/021.md) | [ProductApp](../frontend/src/ProductApp.tsx), [Playwright](../scripts/browser-journeys.spec.cjs) | JSON report, trace, screenshots |
+| strategic novelty and rotation | [novelty record](strategic-novelty.md) | [selection report](../selection-evidence/selection-report.json), [launch narrative](../README.md) | weighted scorecard, last-10 taxonomy, previous-three comparison, dated census, organization windows |
 | frontier mechanism | [ADR-023](adr/023.md) | [benchmark](../crates/cpm-application/src/bin/benchmark.rs), [ablation](../crates/cpm-application/src/bin/ablation.rs) | corpus-bound decision metrics |
 | rootless topology | [ADR-024](adr/024.md) | [compose](../compose.yml), [readiness](../scripts/container-readiness.sh) | container inspect and full-flow receipt |
 | exact evidence/publication | [ADR-025](adr/025.md) | [collector](../scripts/collect-product-evidence.sh), [controller](../scripts/dream-machine-publication-gate.mjs) | manifest, composition, semantic review, CI |

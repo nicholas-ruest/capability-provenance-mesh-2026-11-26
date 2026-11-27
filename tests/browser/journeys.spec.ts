@@ -68,6 +68,10 @@ test("saved result and audit survive refresh and backend restart", async ({ page
   const correlation = await receipt.locator("dt", { hasText: "Correlation" }).locator("..").locator("dd").innerText();
 
   await page.reload();
+  await page.getByRole("button", { name: /Registry/i }).click();
+  await page.getByLabel("Plugin", { exact: true }).fill(id.plugin);
+  await page.getByLabel("Version", { exact: true }).fill(id.version);
+  await page.getByRole("button", { name: "Retrieve from registry" }).click();
   await expect(page.getByTestId("decision-receipt")).toContainText(correlation);
   execFileSync(restart, [], { stdio: "inherit", timeout: 60_000 });
 

@@ -11,7 +11,13 @@ async fn main() {
         env::var("CPM_UPSTREAM_HARNESS_ROOT").unwrap_or_else(|_| "./upstreams".into()),
     );
     let state = AppState::open(data, &harness).expect("open application state");
-    let address = env::var("CPM_BIND").unwrap_or_else(|_| "127.0.0.1:8080".into());
+    let address = env::var("CPM_BIND").unwrap_or_else(|_| {
+        format!(
+            "{}:{}",
+            env::var("CPM_API_HOST").unwrap_or_else(|_| "127.0.0.1".into()),
+            env::var("CPM_API_PORT").unwrap_or_else(|_| "8080".into())
+        )
+    });
     let listener = tokio::net::TcpListener::bind(&address).await.expect("bind");
     axum::serve(listener, router(state)).await.expect("serve");
 }

@@ -1,6 +1,9 @@
 name: full-product-gate
-on: [pull_request, workflow_dispatch]
-permissions: {contents: read}
+on: [pull_request]
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
 concurrency:
   group: full-product-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
@@ -20,9 +23,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, ref: "${{ github.event.pull_request.head.sha || github.sha }}"}
-      - name: Bind independent semantic review to exact head
-        run: source_sha="$(git rev-parse HEAD)"; sed "s/__SOURCE_SHA__/$source_sha/g" selection-evidence/semantic-review.template.md > "$DREAM_MACHINE_SEMANTIC_REVIEW"
-      - run: source_sha="$(git rev-parse HEAD)"; grep -F "$source_sha" "$DREAM_MACHINE_SEMANTIC_REVIEW"
+      - name: Resolve source-bound independent semantic review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REVIEW_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          source_sha="$(git rev-parse HEAD)"
+          comments=/tmp/dream-machine-review-comments.json
+          gh api "repos/$GITHUB_REPOSITORY/issues/$REVIEW_PR_NUMBER/comments?per_page=100" > "$comments"
+          count="$(jq -r --arg sha "$source_sha" '[.[] | select(.user.login == "nicholas-ruest") | select(.body | contains("<!-- DREAM_MACHINE_INDEPENDENT_SEMANTIC_REVIEW -->")) | select(.body | contains($sha)) | select(.body | contains("**PASS**"))] | length' "$comments")"
+          test "$count" = 1
+          jq -r --arg sha "$source_sha" '[.[] | select(.user.login == "nicholas-ruest") | select(.body | contains("<!-- DREAM_MACHINE_INDEPENDENT_SEMANTIC_REVIEW -->")) | select(.body | contains($sha)) | select(.body | contains("**PASS**"))][0].body' "$comments" > "$DREAM_MACHINE_SEMANTIC_REVIEW"
+          grep -F '<!-- DREAM_MACHINE_INDEPENDENT_SEMANTIC_REVIEW -->' "$DREAM_MACHINE_SEMANTIC_REVIEW"
+          grep -F "$source_sha" "$DREAM_MACHINE_SEMANTIC_REVIEW"
+          grep -F '**PASS**' "$DREAM_MACHINE_SEMANTIC_REVIEW"
       - uses: dtolnay/rust-toolchain@stable
         with: {toolchain: "1.100.0", components: rustfmt,clippy}
       - uses: actions/setup-node@v4

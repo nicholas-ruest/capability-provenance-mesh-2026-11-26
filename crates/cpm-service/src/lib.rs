@@ -62,16 +62,24 @@ pub struct RealSuite {
 impl RealSuite {
     #[must_use]
     pub fn from_harness_root(root: &FsPath) -> Self {
-        let run_root = root
-            .parent()
-            .and_then(FsPath::parent)
-            .and_then(FsPath::parent)
-            .map(FsPath::to_path_buf);
+        let source_root = std::env::var_os("CPM_UPSTREAM_SOURCE_ROOT")
+            .map(PathBuf::from)
+            .or_else(|| {
+                root.join("upstreams.lock.json")
+                    .exists()
+                    .then(|| PathBuf::from(".upstreams"))
+            })
+            .or_else(|| {
+                root.parent()
+                    .and_then(FsPath::parent)
+                    .and_then(FsPath::parent)
+                    .map(FsPath::to_path_buf)
+            });
         let pair = |success: &str, failure: &str| {
             (
                 Some(root.join(success)),
                 Some(root.join(failure)),
-                run_root.clone(),
+                source_root.clone(),
             )
         };
         let (a, b, argument) = pair("autogenous-success.sh", "autogenous-failure.sh");

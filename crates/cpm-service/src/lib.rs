@@ -62,22 +62,32 @@ pub struct RealSuite {
 impl RealSuite {
     #[must_use]
     pub fn from_harness_root(root: &FsPath) -> Self {
-        let pair =
-            |success: &str, failure: &str| (Some(root.join(success)), Some(root.join(failure)));
-        let (a, b) = pair("autogenous-success.sh", "autogenous-failure.sh");
-        let autogenous = cpm_autogenous::Adapter::new(a, b);
-        let (a, b) = pair("rugraph-success.sh", "rugraph-failure.sh");
-        let rugraph = cpm_rugraph::Adapter::new(a, b);
-        let (a, b) = pair("agenticow-success.sh", "agenticow-failure.sh");
-        let agenticow = cpm_agenticow::Adapter::new(a, b);
-        let (a, b) = pair("watermark-success.sh", "watermark-failure.sh");
-        let watermark = cpm_watermark::Adapter::new(a, b);
-        let (a, b) = pair("latentmesh-success.sh", "latentmesh-failure.sh");
-        let latentmesh = cpm_latentmesh::Adapter::new(a, b);
-        let (a, b) = pair("skillspector-success.sh", "skillspector-failure.sh");
-        let skillspector = cpm_skillspector::Adapter::new(a, b);
-        let (a, b) = pair("cosign-success.sh", "cosign-failure.sh");
-        let cosign = cpm_cosign::Adapter::new(a, b);
+        let run_root = root
+            .parent()
+            .and_then(FsPath::parent)
+            .and_then(FsPath::parent)
+            .map(FsPath::to_path_buf);
+        let pair = |success: &str, failure: &str| {
+            (
+                Some(root.join(success)),
+                Some(root.join(failure)),
+                run_root.clone(),
+            )
+        };
+        let (a, b, argument) = pair("autogenous-success.sh", "autogenous-failure.sh");
+        let autogenous = cpm_autogenous::Adapter::new(a, b, argument);
+        let (a, b, argument) = pair("rugraph-success.sh", "rugraph-failure.sh");
+        let rugraph = cpm_rugraph::Adapter::new(a, b, argument);
+        let (a, b, argument) = pair("agenticow-success.sh", "agenticow-failure.sh");
+        let agenticow = cpm_agenticow::Adapter::new(a, b, argument);
+        let (a, b, argument) = pair("watermark-success.sh", "watermark-failure.sh");
+        let watermark = cpm_watermark::Adapter::new(a, b, argument);
+        let (a, b, argument) = pair("latentmesh-success.sh", "latentmesh-failure.sh");
+        let latentmesh = cpm_latentmesh::Adapter::new(a, b, argument);
+        let (a, b, argument) = pair("skillspector-success.sh", "skillspector-failure.sh");
+        let skillspector = cpm_skillspector::Adapter::new(a, b, argument);
+        let (a, b, argument) = pair("cosign-success.sh", "cosign-failure.sh");
+        let cosign = cpm_cosign::Adapter::new(a, b, argument);
         Self {
             autogenous,
             rugraph,

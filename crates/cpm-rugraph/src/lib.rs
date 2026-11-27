@@ -16,9 +16,13 @@ pub struct Adapter {
 }
 impl Adapter {
     #[must_use]
-    pub fn new(success: Option<PathBuf>, failure: Option<PathBuf>) -> Self {
+    pub fn new(
+        success: Option<PathBuf>,
+        failure: Option<PathBuf>,
+        argument: Option<PathBuf>,
+    ) -> Self {
         Self {
-            command: UpstreamCommand::new(REPOSITORY, REVISION, success, failure),
+            command: UpstreamCommand::new(REPOSITORY, REVISION, success, failure, argument),
         }
     }
     pub fn execute(&self, kind: ProbeKind) -> Result<UpstreamReceipt, UpstreamError> {
@@ -32,7 +36,7 @@ mod tests {
     fn pins_exact_revision() {
         assert_eq!(REVISION.len(), 40);
         assert!(
-            Adapter::new(None, None)
+            Adapter::new(None, None, None)
                 .execute(ProbeKind::Success)
                 .is_err()
         )

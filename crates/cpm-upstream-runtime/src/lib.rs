@@ -35,34 +35,46 @@ pub struct UpstreamCommand {
     revision: &'static str,
     success: Option<PathBuf>,
     failure: Option<PathBuf>,
+    argument: Option<PathBuf>,
 }
 impl UpstreamCommand {
     #[must_use]
-    pub fn new(r: &'static str, v: &'static str, s: Option<PathBuf>, f: Option<PathBuf>) -> Self {
+    pub fn new(
+        repository: &'static str,
+        revision: &'static str,
+        success: Option<PathBuf>,
+        failure: Option<PathBuf>,
+        argument: Option<PathBuf>,
+    ) -> Self {
         Self {
-            repository: r,
-            revision: v,
-            success: s,
-            failure: f,
+            repository,
+            revision,
+            success,
+            failure,
+            argument,
         }
     }
-    pub fn execute(&self, k: ProbeKind) -> Result<UpstreamReceipt, UpstreamError> {
-        let p = match k {
+    pub fn execute(&self, kind: ProbeKind) -> Result<UpstreamReceipt, UpstreamError> {
+        let path = match kind {
             ProbeKind::Success => &self.success,
             ProbeKind::Failure => &self.failure,
         }
         .as_ref()
         .ok_or(UpstreamError::Unconfigured)?;
-        let o = Command::new(p).output().map_err(UpstreamError::Launch)?;
-        if !o.status.success() {
-            return Err(UpstreamError::Exit(o.status.code()));
+        let mut command = Command::new(path);
+        if let Some(argument) = &self.argument {
+            command.arg(argument);
         }
-        let mut b = o.stdout;
-        b.extend(o.stderr);
+        let output = command.output().map_err(UpstreamError::Launch)?;
+        if !output.status.success() {
+            return Err(UpstreamError::Exit(output.status.code()));
+        }
+        let mut bytes = output.stdout;
+        bytes.extend(output.stderr);
         Ok(UpstreamReceipt {
             repository: self.repository,
             revision: self.revision,
-            output_sha256: format!("{:x}", Sha256::digest(b)),
+            output_sha256: format!("{:x}", Sha256::digest(bytes)),
         })
     }
 }
@@ -72,7 +84,7 @@ mod tests {
     #[test]
     fn refuses_unconfigured() {
         assert!(matches!(
-            UpstreamCommand::new("o/r", "v", None, None).execute(ProbeKind::Success),
+            UpstreamCommand::new("o/r", "v", None, None, None).execute(ProbeKind::Success),
             Err(UpstreamError::Unconfigured)
         ))
     }
@@ -80,7 +92,7 @@ mod tests {
     #[test]
     fn executes() {
         assert_eq!(
-            UpstreamCommand::new("o/r", "v", Some("/bin/true".into()), None)
+            UpstreamCommand::new("o/r", "v", Some("/bin/true".into()), None, None)
                 .execute(ProbeKind::Success)
                 .unwrap()
                 .revision,

@@ -1,0 +1,43 @@
+name: capability-provenance-mesh
+services:
+  api:
+    build:
+      context: .
+      dockerfile: containers/api.Containerfile
+    environment:
+      CPM_API_HOST: 0.0.0.0
+      CPM_API_PORT: "8080"
+      CPM_DATA_DIR: /var/lib/cpm
+      CPM_TEMP_DIR: /tmp/cpm
+      RUST_LOG: ${RUST_LOG:-info}
+    ports: ["127.0.0.1:8080:8080"]
+    read_only: true
+    user: "65532:65532"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=128m"]
+    volumes: ["cpm-data:/var/lib/cpm:rw"]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/readiness", "http://127.0.0.1:8080/readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+  frontend:
+    build:
+      context: .
+      dockerfile: containers/frontend.Containerfile
+    ports: ["127.0.0.1:4173:8080"]
+    read_only: true
+    user: "101:101"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=32m"]
+    depends_on:
+      api: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+volumes:
+  cpm-data: {}

@@ -1,0 +1,34 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: capability-provenance-api
+  annotations:
+    run.googleapis.com/launch-stage: BETA
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      containerConcurrency: 40
+      timeoutSeconds: 60
+      serviceAccountName: REPLACE_WITH_APPROVED_SERVICE_ACCOUNT
+      containers:
+        - image: REPLACE_WITH_IMMUTABLE_API_IMAGE_DIGEST
+          ports: [{containerPort: 8080}]
+          env:
+            - {name: CPM_API_HOST, value: "0.0.0.0"}
+            - {name: CPM_API_PORT, value: "8080"}
+            - {name: CPM_DATA_DIR, value: "REPLACE_WITH_AUTHORIZED_SHARED_STORAGE"}
+          resources:
+            limits: {cpu: "2", memory: 1Gi}
+          startupProbe:
+            httpGet: {path: /healthz, port: 8080}
+            failureThreshold: 24
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: {path: /healthz, port: 8080}
+          readinessProbe:
+            httpGet: {path: /readyz, port: 8080}

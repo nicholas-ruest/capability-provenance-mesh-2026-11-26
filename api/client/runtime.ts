@@ -1,29 +1,18 @@
-import { ApiError, ErrorEnvelope, UpstreamEvidence } from "./generated";
+import { CapabilitySubmission, DecisionRecord, ErrorEnvelope } from "./schema";
+export type { CapabilityManifest, CapabilitySubmission, DecisionRecord } from "./schema";
 
-export interface CapabilityManifest {
-  api_version: "cpm.capability/v1";
-  name: string;
-  entrypoint: string;
-  capabilities: string[];
+export interface UpstreamEvidence {
+  project: string;
+  revision: string;
+  responsibility: string;
+  status: "verified" | "failed";
 }
 
-export interface CapabilitySubmission {
-  plugin: string;
-  version: string;
-  artifact: number[];
-  manifest: CapabilityManifest;
-  human_approved: boolean;
-  denial_probe: boolean;
-}
-
-export interface DecisionRecord {
-  correlation_id: string;
-  plugin: string;
-  version: string;
-  admitted: boolean;
-  artifact_digest: string;
-  receipt_checksum: string;
-  upstream_receipts: string[];
+export class ApiError extends Error {
+  constructor(public readonly status: number, public readonly envelope: ErrorEnvelope) {
+    super(envelope.message);
+    this.name = "ApiError";
+  }
 }
 
 export interface RuntimeClientOptions {

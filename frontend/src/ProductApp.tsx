@@ -1,7 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { ApiError } from "../../api/client";
 import {
-  CapabilityManifest, DecisionRecord, RuntimeClient, evidenceFrom,
+  ApiError, CapabilityManifest, DecisionRecord, RuntimeClient, evidenceFrom,
 } from "../../api/client/runtime";
 
 type View = "admission" | "registry" | "audit" | "mesh";
